@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Growth Pet - 你照顾它，它陪你成长</title>
+  <style>
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root{
+      --cream:#fbf4e8; --paper:#fffaf2; --card:#fff8ee; --wood:#b78f66; --wood-dark:#6d563f;
+      --text:#2f261f; --muted:#8d7a67; --line:#eadcc8; --green:#77bf65; --blue:#6ea8d7;
+      --yellow:#efb74d; --rose:#e97987; --shadow:0 10px 28px rgba(92,62,34,.10);
+    }
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+      min-height:100vh; color:var(--text); overflow-x:hidden;
+      background:linear-gradient(115deg,#f8eddc 0%,#fff9ef 43%,#eee0ca 100%);
+    }
+    body::before{
+      content:""; position:fixed; inset:0; pointer-events:none; opacity:.48;
+      background:
+        radial-gradient(circle at 18% 8%,rgba(255,255,255,.9),transparent 25%),
+        radial-gradient(circle at 84% 18%,rgba(255,218,166,.48),transparent 26%),
+        linear-gradient(90deg,rgba(120,84,48,.08),transparent 18%,transparent 82%,rgba(120,84,48,.06));
+      z-index:-2;
+    }
+    .bg-dots{display:none}
+    .page{display:none;width:100%;min-height:100vh}.page.active{display:flex}.page:not(#mainPage).active{align-items:center;justify-content:center;padding:32px}
+    .card{
+      width:min(430px,92vw); background:rgba(255,253,248,.82); backdrop-filter:blur(26px) saturate(1.06); -webkit-backdrop-filter:blur(26px) saturate(1.06); border:1px solid rgba(255,255,255,.55); border-radius:26px;
+      padding:34px 30px; box-shadow:inset 0 1px 0 rgba(255,255,255,.6),var(--shadow); text-align:center; animation:softIn .35s ease;
+    }
+    @keyframes softIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+    .card h2{font-size:24px;line-height:1.35;margin:8px 0 10px;color:var(--wood-dark);font-weight:750}.subtitle{color:var(--muted);line-height:1.7;margin-bottom:24px}.welcome-emoji{font-size:46px}.primary-btn,.result-btn,.choice-pet-btn,.goal-save-btn,.reset-btn{
+      border:0;border-radius:15px;background:var(--accent);color:white;font-weight:700;padding:12px 24px;cursor:pointer;box-shadow:0 6px 14px rgba(216,138,44,.20);transition:.18s ease
+    }
+    .primary-btn:hover,.result-btn:hover,.goal-save-btn:hover,.reset-btn:hover{transform:translateY(-1px);background:#db8a2c}
+    .quiz-progress{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:13px;margin-bottom:20px}.quiz-progress-bar{width:130px;height:6px;background:#eadfce;border-radius:99px;overflow:hidden}.quiz-progress-fill{height:100%;background:#b99168}.quiz-question-label{font-size:12px;color:#b8a691;letter-spacing:1.6px;margin-bottom:8px}.quiz-question{font-size:18px;font-weight:750;line-height:1.55;margin-bottom:22px}.quiz-options{display:grid;gap:12px}.quiz-option{display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:#fffaf2;border-radius:16px;padding:13px 15px;text-align:left;cursor:pointer;color:var(--text)}.quiz-option-letter{width:28px;height:28px;border-radius:50%;background:#efe1cf;color:#8a6748;display:grid;place-items:center;font-weight:800}.result-pet-avatar{width:112px;height:112px;border-radius:50%;display:grid;place-items:center;font-size:56px;background:#f3e5d3;margin:12px auto}.result-title,.choice-title{font-size:20px;font-weight:800;margin-bottom:8px}.result-pet-name{font-size:23px;font-weight:800}.result-pet-desc,.result-reason-text,.choice-subtitle{color:var(--muted);line-height:1.7}.result-reason-box{background:#fff4e6;border:1px solid var(--line);border-radius:18px;padding:14px;margin:16px 0 22px}.result-reason-label{font-size:12px;color:#b8a691;margin-bottom:5px}.result-buttons{display:flex;gap:12px}.result-btn{flex:1}.result-btn.secondary{background:#efe1cf;color:#6d563f}.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px}.choice-pet-card{border:1px solid var(--line);border-radius:20px;padding:18px 12px;background:#fffaf2}.choice-pet-emoji{font-size:42px}.choice-pet-name{font-weight:800;margin:6px 0}.choice-pet-desc{font-size:13px;min-height:40px}
+
+    /* Main app */
+    #mainPage.active{display:block}.app-shell{max-width:1280px;margin:0 auto;min-height:100vh;display:grid;grid-template-columns:210px 1fr;gap:20px;padding:22px 22px 26px}.sidebar{
+      position:sticky;top:22px;height:calc(100vh - 44px);background:rgba(255,250,242,.74);border:1px solid rgba(218,201,178,.76);border-radius:28px;box-shadow:0 14px 34px rgba(94,67,41,.08);padding:24px 16px;display:flex;flex-direction:column
+    }.brand{display:flex;align-items:center;gap:10px;margin-bottom:30px;color:var(--wood-dark)}.brand .paw{font-size:28px}.brand h1{font-size:22px;line-height:1}.brand p{font-size:12px;color:var(--muted);margin-top:5px}.nav{display:grid;gap:8px}.nav a{display:flex;align-items:center;gap:12px;text-decoration:none;color:#6f5944;font-weight:650;padding:13px 14px;border-radius:16px}.nav a.active,.nav a:hover{background:#fffaf2;box-shadow:0 4px 12px rgba(95,65,39,.07)}.sidebar-profile{margin-top:auto;border-top:1px solid var(--line);padding-top:18px}.mini-pet{display:flex;gap:12px;align-items:center}.mini-avatar{width:48px;height:48px;border-radius:50%;background-size:cover;background-position:center;background-image:url('https://images.unsplash.com/photo-1592194996308-7b43878e84a6?auto=format&fit=crop&w=200&q=80')}.mini-name-row{display:flex;align-items:center;gap:6px}.mini-name-row input{width:82px;border:0;background:transparent;font-size:19px;font-weight:800;color:var(--wood-dark);outline:0}.mini-name-row .icon{font-size:15px}.mini-stat{font-size:12px;color:var(--muted);margin-top:3px}.mini-bar{height:7px;background:#e7d8c7;border-radius:99px;overflow:hidden;margin-top:8px}.mini-bar span{display:block;height:100%;width:65%;background:#ed8992}.quote{margin-top:26px;color:#7e6b58;font-size:14px;line-height:1.7}
+    .content{display:grid;gap:18px}.hero{position:relative;min-height:560px;border-radius:30px;overflow:hidden;border:1px solid rgba(230,214,193,.9);box-shadow:var(--shadow);background:#efe1cf}.hero::before{content:"";position:absolute;inset:0;background-image:linear-gradient(90deg,rgba(76,49,27,.10),rgba(255,250,242,.16)),url('https://images.unsplash.com/photo-1592194996308-7b43878e84a6?auto=format&fit=crop&w=1600&q=88');background-size:cover;background-position:center 42%;filter:saturate(.96) contrast(.98)}.hero::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 22% 9%,rgba(255,255,255,.55),transparent 28%),linear-gradient(180deg,transparent 70%,rgba(93,61,34,.18))}.top-pill{position:absolute;top:22px;left:50%;transform:translateX(-50%);z-index:2;display:flex;align-items:center;background:rgba(255,250,242,.88);border:1px solid rgba(231,219,204,.9);border-radius:24px;box-shadow:0 10px 24px rgba(86,60,36,.10);overflow:hidden}.top-pill .metric{display:flex;align-items:center;gap:10px;padding:13px 25px;border-right:1px solid var(--line)}.top-pill .metric:last-child{border-right:0;min-width:250px}.coin-icon,.star-icon{font-size:28px}.metric-label{font-size:12px;color:var(--muted);font-weight:700}.metric-value{font-size:20px;font-weight:850}.level-mini{font-weight:850}.exp-track{width:145px;height:9px;background:#e0d4c7;border-radius:99px;overflow:hidden;margin-left:8px}.exp-bar-fill{display:block;height:100%;background:#e8b047;border-radius:99px}.exp-bar-text{font-size:14px;color:#4f4134;margin-left:auto}.date-card{position:absolute;right:28px;top:118px;z-index:2;background:rgba(255,250,242,.78);border:1px solid rgba(231,219,204,.85);border-radius:18px;padding:13px 18px;display:flex;gap:12px;align-items:center;color:#5d4d3e}.date-card .sun{font-size:28px;color:#e6a21d}.date-card small{display:block;color:var(--muted);margin-top:3px}.speech{position:absolute;right:190px;top:195px;z-index:3;background:rgba(255,250,242,.92);border:1px solid rgba(231,219,204,.9);border-radius:22px;padding:20px 24px;max-width:250px;line-height:1.75;font-weight:720;box-shadow:0 10px 22px rgba(89,60,36,.10)}.speech::after{content:"";position:absolute;left:16px;bottom:-15px;border-top:18px solid rgba(255,250,242,.92);border-right:20px solid transparent}.pet-area{position:absolute;inset:120px 360px 56px 76px;z-index:2;cursor:pointer}.pet{position:absolute;inset:0}.pet-emoji-display{position:absolute;width:100%;height:100%;font-size:0;color:transparent}.zzz{position:absolute;right:6%;top:10%;font-size:20px;opacity:0}.pet.sleeping .zzz{opacity:1;animation:floatZ 2.5s infinite}@keyframes floatZ{50%{transform:translateY(-10px);opacity:.8}}
+    .stats-section{position:absolute;right:28px;bottom:42px;z-index:2;width:300px;background:rgba(255,250,242,.86);border:1px solid rgba(231,219,204,.9);border-radius:24px;padding:18px 18px 16px;box-shadow:0 10px 25px rgba(91,62,36,.10);display:grid;gap:16px}.stat-header{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:#5e4d3e}.stat-value{font-size:13px;color:#46382d}.stat-icon{font-size:24px;margin-right:8px}.stat-bar-bg{height:8px;background:#e7d8c7;border-radius:99px;overflow:hidden;margin-top:7px}.stat-bar-fill{height:100%;border-radius:99px;transition:.35s}.stat-health{background:var(--green)}.stat-warning{background:var(--yellow)}.stat-danger{background:#d97466}.action-section{position:absolute;left:28px;bottom:30px;z-index:3;background:rgba(255,250,242,.78);border:1px solid rgba(231,219,204,.88);border-radius:22px;padding:13px 14px}.action-section-title{font-size:12px;color:var(--muted);margin-bottom:8px}.action-buttons{display:flex;gap:8px;flex-wrap:wrap}.action-btn{border:1px solid var(--line);background:#fffaf2;color:#6c5743;border-radius:13px;padding:9px 11px;cursor:pointer;font-weight:700;display:flex;gap:5px;align-items:center}.btn-icon{font-size:17px}.effect-particle{position:absolute;pointer-events:none;animation:effectFloat 1s ease-out forwards;z-index:20}@keyframes effectFloat{to{opacity:0;transform:translateY(-70px) scale(1.25)}}
+    .dashboard{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:18px}.panel{background:rgba(255,250,242,.9);border:1px solid rgba(231,219,204,.9);border-radius:24px;padding:22px;box-shadow:0 8px 22px rgba(94,65,38,.07)}.panel-title,.plan-title,.mood-title,.goal-title,.achievement-title{font-size:21px;font-weight:850;color:#2f261f;margin-bottom:12px}.plan-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-bottom:8px}.plan-progress-bar{height:8px;background:#eadfce;border-radius:99px;overflow:hidden;margin-bottom:13px}.plan-progress-fill{height:100%;background:var(--green);border-radius:99px}.plan-list{display:grid}.plan-task{display:grid;grid-template-columns:28px 1fr 28px;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #eadfce}.plan-task-left{grid-column:2}.plan-task::before{content:"";width:24px;height:24px;border-radius:50%;border:2px solid #cdbda9}.plan-task.completed::before{content:"✓";display:grid;place-items:center;background:var(--green);border-color:var(--green);color:#fff;font-weight:900}.plan-task-name{font-weight:750}.plan-task.completed .plan-task-name{text-decoration:none;color:#5f7f4d}.plan-task-reward{font-size:13px;color:#8d7a67;margin-top:3px}.plan-task-btn{width:26px;height:26px;border-radius:50%;border:1px solid #d8c8b5;background:#fffaf2;color:transparent;cursor:pointer}.plan-task-btn.done{background:var(--green);border-color:var(--green);color:white;font-size:0}.plan-task-btn.done::after{content:"✓";font-size:14px;color:#fff}.mood-guide,.goal-desc{font-size:14px;color:var(--muted);margin-bottom:16px}.mood-buttons{display:flex;gap:14px;margin-bottom:16px}.mood-btn{border:0;background:transparent;cursor:pointer;color:#5e4d3e;display:grid;gap:5px;justify-items:center}.mood-emoji{width:34px;height:34px;border:2px solid #b8aa99;border-radius:50%;display:grid;place-items:center;font-size:19px}.mood-btn.selected .mood-emoji{border-color:#6ea8d7;background:#e8f1f7}.mood-label{font-size:13px}.mood-note{min-height:110px;background:#fbefe1;border:1px solid #efdfcc;border-radius:17px;padding:18px;color:#5d4d3e;line-height:1.7}.mood-record{margin-top:14px;background:#fff6e9;border:1px solid #efdfcc;border-radius:14px;padding:12px;color:#4f8b52;font-weight:750;font-size:14px}.goal-grid{display:grid;gap:10px}.goal-card{display:grid;grid-template-columns:26px 1fr 24px;align-items:center;gap:10px;border:1px solid #eadfce;background:#fffaf2;border-radius:14px;padding:11px 12px;cursor:pointer}.goal-card.selected{background:#eef5ed;border-color:#d9e8d5}.goal-icon{font-size:18px}.goal-text{font-weight:750}.goal-check{width:22px;height:22px;border-radius:50%;border:2px solid #cdbda9;color:transparent;display:grid;place-items:center}.goal-card.selected .goal-check{background:var(--green);border-color:var(--green);color:#fff}.goal-save-btn{margin-top:14px;width:100%;background:#c7a17a}.lower{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}.achievement-grid{display:grid;gap:10px}.achievement-card{display:grid;grid-template-columns:34px 1fr;column-gap:10px;align-items:center;border-bottom:1px solid #eadfce;padding:6px 0}.achievement-icon{font-size:28px}.achievement-name{font-weight:800}.achievement-desc{font-size:13px;color:var(--muted)}.achievement-card.locked{opacity:.54;filter:grayscale(1)}.achievement-lock{display:none}.reset-btn{background:#efe1cf;color:#6d563f;margin-top:14px;width:100%}.placeholder-room{height:205px;border-radius:18px;background-image:url('https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?auto=format&fit=crop&w=900&q=80');background-size:cover;background-position:center;box-shadow:inset 0 -45px 60px rgba(79,52,29,.12)}.room-btn{margin-top:15px;width:100%;border:0;border-radius:14px;background:#c7a17a;color:white;font-weight:800;padding:12px}.shop-list{display:grid;gap:12px}.shop-item{display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:12px}.shop-emoji{font-size:32px}.shop-name{font-weight:780}.shop-desc{font-size:13px;color:var(--muted)}.shop-price{color:#b68432;font-weight:850}
+    .levelup-overlay,.achievement-popup-overlay{position:fixed;inset:0;background:rgba(64,45,27,.28);display:none;align-items:center;justify-content:center;z-index:100}.levelup-overlay.show,.achievement-popup-overlay.show{display:flex}.levelup-popup,.achievement-popup{width:min(320px,90vw);background:rgba(255,253,248,.72);backdrop-filter:blur(26px) saturate(1.08);-webkit-backdrop-filter:blur(26px) saturate(1.08);border:1px solid rgba(255,255,255,.55);border-radius:24px;padding:30px;text-align:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 24px 50px rgba(67,45,26,.16)}.levelup-emoji,.achievement-popup-emoji{font-size:42px}.levelup-title,.achievement-popup-title{font-size:22px;font-weight:850;margin:8px 0;color:#6d563f}.levelup-level{font-size:30px;font-weight:900}.levelup-desc,.achievement-popup-desc{color:var(--muted);line-height:1.6}.achievement-popup-label{font-size:12px;color:var(--muted)}
+    @media(max-width:1050px){.app-shell{grid-template-columns:1fr}.sidebar{position:relative;height:auto;top:auto}.nav{grid-template-columns:repeat(3,1fr)}.hero{min-height:520px}.pet-area{inset:120px 260px 50px 50px}.stats-section{width:270px}.dashboard,.lower{grid-template-columns:1fr 1fr}.goal-section{grid-column:auto}}@media(max-width:720px){.app-shell{padding:12px}.sidebar{border-radius:22px}.nav{grid-template-columns:1fr 1fr}.hero{min-height:720px}.hero::before{background-position:center top}.top-pill{position:relative;left:auto;top:auto;transform:none;margin:14px;display:grid;grid-template-columns:1fr 1fr}.top-pill .metric{padding:10px 14px}.top-pill .metric:last-child{grid-column:1/3;min-width:0}.date-card{top:118px;right:14px}.speech{left:22px;right:22px;top:185px;max-width:none}.stats-section{left:18px;right:18px;bottom:120px;width:auto}.action-section{left:18px;right:18px;bottom:20px}.pet-area{display:none}.dashboard,.lower{grid-template-columns:1fr}.mood-buttons{justify-content:space-between;gap:6px}.panel{padding:18px}}
+
+
+    /* ===== Soft product layout + real photo kitten ===== */
+    :root{
+      --cream:#fffaf2; --paper:#ffffff; --card:#ffffff; --wood:#c79a68; --wood-dark:#5d4632;
+      --text:#2e2620; --muted:#8c7a68; --line:rgba(214,197,174,.55); --green:#5cae63; --blue:#6ea8d7;
+      --yellow:#f2a93b; --rose:#e97883; --accent:#f0a23e; --accent-soft:#f6e1c6;
+      --shadow:0 14px 36px rgba(92,62,34,.08); --shadow-sm:0 6px 18px rgba(92,62,34,.06);
+    }
+    body{
+      background:
+        radial-gradient(1100px 760px at 8% -8%,rgba(255,255,255,.95),transparent 58%),
+        radial-gradient(820px 680px at 96% 4%,rgba(245,224,196,.32),transparent 60%),
+        radial-gradient(760px 620px at 90% 96%,rgba(214,226,236,.24),transparent 60%),
+        radial-gradient(1100px 880px at 64% 118%,rgba(226,208,186,.22),transparent 58%),
+        linear-gradient(128deg,#f8f2ea 0%,#fffdfb 46%,#f0e8dc 100%);
+    }
+    body::before{opacity:.16;filter:blur(2px)}
+    .app-shell{max-width:1360px;grid-template-columns:230px 1fr;gap:26px;padding:0 30px 34px 0;margin:0 auto 0 0}
+    .sidebar{top:0;height:100vh;border-radius:0 28px 28px 0;background:rgba(255,253,248,.46);backdrop-filter:blur(26px) saturate(1.1);-webkit-backdrop-filter:blur(26px) saturate(1.1);box-shadow:inset -1px 0 0 rgba(255,255,255,.6),0 18px 40px rgba(92,62,34,.04);border-left:0;padding:30px 22px}
+    .brand{margin-bottom:34px}.brand h1{font-size:21px;letter-spacing:.2px}.brand p{font-size:13px;margin-top:8px}
+    .nav{gap:12px}.nav a{border-radius:16px;padding:14px 16px;font-size:16px}.nav a.active,.nav a:hover{background:#eef3e5;color:#405d35;box-shadow:none}
+    .sidebar-profile{border-top:1px solid rgba(222,205,184,.62);padding-top:24px}.mini-avatar{box-shadow:0 8px 20px rgba(94,65,38,.12)}
+    .quote{font-size:16px;line-height:1.9;color:#816d59;margin-top:34px;position:relative}.quote::before,.quote::after{color:#e0c29f;font-size:30px}.quote::before{content:'“';margin-right:4px}.quote::after{content:'”';margin-left:4px}
+    .content{gap:18px;padding-top:24px;max-width:1138px}
+    .hero-head{display:flex;align-items:center;justify-content:space-between;gap:24px;margin:0 0 -2px 0;padding:0 4px 0 8px;min-height:82px}
+    .hero-title h2{font-size:30px;line-height:1.22;color:#4d3827;margin:0 0 8px;font-weight:850;letter-spacing:-.5px}.hero-title p{font-size:16px;color:#8b745f;margin:0}
+    .hero-head .top-pill{position:static;transform:none;display:flex;background:rgba(255,253,248,.52);backdrop-filter:blur(22px) saturate(1.06);-webkit-backdrop-filter:blur(22px) saturate(1.06);border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 14px 30px rgba(92,62,34,.06);border:1px solid rgba(255,255,255,.5);overflow:hidden;min-width:500px}.hero-head .top-pill .metric{padding:14px 24px}.hero-head .top-pill .metric:last-child{min-width:235px}
+    .hero{min-height:520px;border-radius:0;overflow:hidden;border:0;box-shadow:none;background:linear-gradient(180deg,#f8ead8,#f1d7b8)}
+    .hero::before{
+      background-image:
+        radial-gradient(circle at 18% 14%,rgba(255,255,255,.85),transparent 24%),
+        linear-gradient(180deg,rgba(255,253,248,.36) 0%,rgba(255,248,236,.16) 55%,rgba(120,84,47,.10) 100%),
+        linear-gradient(90deg,rgba(96,65,37,.05),rgba(255,255,255,.04)),
+        url('https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?auto=format&fit=crop&w=1600&q=86');
+      background-size:cover;background-position:center 55%;filter:saturate(.80) contrast(.92) brightness(1.18) blur(.6px);transform:scale(1.02)
+    }
+    .hero::after{background:linear-gradient(180deg,rgba(255,253,248,.18) 0%,rgba(255,248,236,.10) 60%,rgba(124,84,47,.10) 100%)}
+    .date-card{right:28px;top:22px;width:260px;min-height:98px;border-radius:22px;background:rgba(255,253,248,.60);backdrop-filter:blur(18px) saturate(1.05);-webkit-backdrop-filter:blur(18px) saturate(1.05);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 12px 26px rgba(79,52,29,.05);border:1px solid rgba(255,255,255,.5);padding:18px 22px}
+    .stats-section{right:28px;top:152px;bottom:auto;width:300px;border-radius:22px;background:rgba(255,253,248,.62);backdrop-filter:blur(18px) saturate(1.05);-webkit-backdrop-filter:blur(18px) saturate(1.05);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 14px 30px rgba(79,52,29,.05);border:1px solid rgba(255,255,255,.5);padding:20px;gap:20px}.stat-header{font-size:15px}.stat-bar-bg{height:7px;background:#e6dccf}.stat-bar-fill{filter:saturate(.9)}
+    .speech{left:118px;right:auto;top:145px;max-width:220px;border-radius:22px;background:rgba(255,253,248,.64);backdrop-filter:blur(18px) saturate(1.05);-webkit-backdrop-filter:blur(18px) saturate(1.05);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 14px 30px rgba(79,52,29,.06);border:1px solid rgba(255,255,255,.5);padding:20px 24px;font-weight:720}.speech::after{left:auto;right:-14px;bottom:22px;border-top:14px solid transparent;border-bottom:14px solid transparent;border-left:18px solid rgba(255,253,248,.64);border-right:0}
+    .pet-area{inset:78px 320px 6px 210px;display:flex;align-items:flex-end;justify-content:center;overflow:visible;cursor:pointer;--look-x:0px;--look-y:0px;--look-r:0deg}
+    .pet{position:relative;inset:auto;width:300px;height:330px;display:flex;align-items:flex-end;justify-content:center;filter:none;will-change:transform}
+    .pet-emoji-display{display:none!important}
+.cat3d-mount{position:absolute;inset:0;width:100%;height:100%}
+.cat3d-mount canvas{display:block;width:100%!important;height:100%!important}
+    .cat-wrap{width:300px;height:330px;transform-origin:50% 90%;animation:catBreath 4.6s ease-in-out infinite;will-change:transform}
+    .cat-svg{width:100%;height:100%;display:block;overflow:visible}
+    .cat-tail{transform-box:view-box;transform-origin:162px 208px;animation:catTail 3.8s ease-in-out infinite}
+    .cat-pupil{transform-box:view-box;transform:translate(var(--look-x),var(--look-y));transition:transform .14s ease}
+    .cat-eye-l{transform-box:view-box;transform-origin:100px 97px}
+    .cat-eye-r{transform-box:view-box;transform-origin:140px 97px}
+    .cat-eyes-happy,.cat-eyes-sleep{opacity:0}.cat-blush{opacity:.28;transition:opacity .3s}.cat-sparkle{opacity:0}
+    .pet.blinking .cat-eye{animation:catBlink .18s ease-in-out 1}
+    .pet.happy .cat-eyes-open{opacity:0}.pet.happy .cat-eyes-happy{opacity:1}.pet.happy .cat-blush{opacity:1}
+    .pet.happy .cat-sparkle{opacity:1;animation:catTwinkle .9s ease-in-out infinite alternate}
+    .pet.happy .cat-wrap{animation:catWiggle .82s cubic-bezier(.22,1.25,.35,1) 1}
+    .pet.sleeping .cat-eyes-open{opacity:0}.pet.sleeping .cat-eyes-sleep{opacity:1}
+    .pet.sleeping .cat-wrap{animation:catSleep 3.8s ease-in-out infinite}
+    .pet.bouncing .cat-wrap{animation:catHop .6s cubic-bezier(.2,1.2,.35,1) 1}
+    .zzz{position:absolute;right:20%;top:6%;font-size:20px;opacity:0;z-index:5;pointer-events:none}
+    .pet.sleeping .zzz{opacity:1;animation:floatZ 2.6s infinite}
+    .speech.updated{animation:speechPop .32s ease}
+    .action-section{left:50%;transform:translateX(-50%);bottom:18px;background:rgba(255,253,248,.44);backdrop-filter:blur(18px) saturate(1.05);-webkit-backdrop-filter:blur(18px) saturate(1.05);border-radius:28px;border:1px solid rgba(255,255,255,.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 12px 28px rgba(95,65,39,.05);padding:10px 14px}.action-section-title{display:none}.action-buttons{gap:16px}.action-btn{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;padding:0;background:rgba(255,253,248,.62);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:inset 0 1px 0 rgba(255,255,255,.65),0 8px 18px rgba(92,62,34,.08);border:1px solid rgba(255,255,255,.5);color:#6c5139}.action-btn span:last-child{position:absolute;transform:translateY(40px);font-size:13px;font-weight:800}.btn-icon{font-size:22px}
+    .dashboard{grid-template-columns:1fr 1fr 1fr;gap:18px;margin:0 8px}.lower{grid-template-columns:1fr 1fr 1fr;gap:18px;margin:0 8px}.panel{border-radius:20px;background:rgba(255,253,248,.80);backdrop-filter:blur(18px) saturate(1.05);-webkit-backdrop-filter:blur(18px) saturate(1.05);border:1px solid rgba(255,255,255,.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 14px 30px rgba(92,62,34,.05);padding:22px 24px}.panel-title,.plan-title,.mood-title,.goal-title,.achievement-title{font-size:20px;color:#3d3026}.plan-task{padding:11px 0}.goal-card{border-radius:13px;background:rgba(255,253,248,.76)}.mood-note{background:#fbf0e3}.mood-record{background:#fff7eb}.placeholder-room{height:190px;border-radius:16px}.room-btn,.goal-save-btn{background:#6f915f;border-radius:13px}.shop-item{grid-template-columns:38px 1fr auto}.shop-emoji{font-size:28px}
+    @keyframes speechPop{50%{transform:scale(1.025)}}
+    @keyframes catBreath{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.014,.992)}}
+    @keyframes catBlink{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.08)}}
+    @keyframes catTail{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(6deg)}}
+    @keyframes catHop{0%{transform:translateY(0)}28%{transform:translateY(-16px)}100%{transform:translateY(0)}}
+    @keyframes catWiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-3deg)}60%{transform:rotate(3deg)}}
+    @keyframes catSleep{0%,100%{transform:translateY(2px) scale(1,.985)}50%{transform:translateY(6px) scale(.99,.97)}}
+    @keyframes catTwinkle{0%{opacity:.3;transform:scale(.7)}100%{opacity:1;transform:scale(1.1)}}
+    @media(max-width:1050px){.app-shell{grid-template-columns:1fr;padding:14px}.sidebar{position:relative;height:auto;top:auto;border-radius:26px}.content{max-width:none}.hero-head{flex-direction:column;align-items:stretch}.hero-head .top-pill{min-width:0}.pet-area{inset:120px 260px 8px 80px}.dashboard,.lower{grid-template-columns:1fr 1fr}.stats-section{width:270px}}
+    @media(max-width:720px){.hero-head .top-pill{display:grid;grid-template-columns:1fr 1fr}.hero-head .top-pill .metric:last-child{grid-column:1/3;min-width:0}.hero{min-height:720px}.speech{left:22px;right:22px;top:130px;max-width:none}.speech::after{display:none}.date-card{left:18px;right:18px;top:24px;width:auto}.stats-section{left:18px;right:18px;top:auto;bottom:110px;width:auto}.action-section{left:18px;right:18px;transform:none;bottom:18px}.action-buttons{justify-content:space-around}.pet-area{display:flex;left:20px;right:20px;top:235px;bottom:270px}.pet{width:240px;height:265px}.cat-wrap{width:240px;height:265px}.dashboard,.lower{grid-template-columns:1fr;margin:0}.panel{padding:18px}}
+
+  </style>
+</head>
+
+<body>
+  <div class="bg-dots" id="bgDots"></div>
+
+  <div class="levelup-overlay" id="levelupOverlay">
+    <div class="levelup-popup">
+      <div class="levelup-emoji">🎉</div>
+      <div class="levelup-title">恭喜升级！</div>
+      <div class="levelup-level" id="levelupLevelText">Lv.2</div>
+      <div class="levelup-desc">你和宠物变得更加亲密了。</div>
+    </div>
+  </div>
+
+  <div class="achievement-popup-overlay" id="achievementPopupOverlay">
+    <div class="achievement-popup">
+      <div class="achievement-popup-emoji">🏆</div>
+      <div class="achievement-popup-label">解锁新成就</div>
+      <div class="achievement-popup-title" id="achievementPopupTitle"></div>
+      <div class="achievement-popup-desc" id="achievementPopupDesc"></div>
+    </div>
+  </div>
+
+  <div class="page" id="welcomePage">
+    <div class="card fade-in">
+      <div class="welcome-emoji">🐾</div>
+      <h2>欢迎来到 Growth Pet 领养中心</h2>
+      <p class="subtitle">在一个有阳光的房间里，遇见会陪你慢慢变好的小伙伴。</p>
+      <button class="primary-btn" id="startQuizBtn">开始领养测试</button>
+    </div>
+  </div>
+
+  <div class="page" id="quizPage">
+    <div class="card quiz-card slide-in" id="quizCard">
+      <div class="quiz-progress">
+        <span id="quizProgressText">第 1 / 5 题</span>
+        <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizProgressFill" style="width:20%"></div></div>
+      </div>
+      <div class="quiz-question-label" id="quizLabel">QUESTION 1</div>
+      <div class="quiz-question" id="quizQuestion"></div>
+      <div class="quiz-options" id="quizOptions"></div>
+    </div>
+  </div>
+
+  <div class="page" id="resultPage">
+    <div class="card result-card pop-in" id="resultCard">
+      <div class="result-title">我为你找到了最适合的伙伴</div>
+      <div class="result-pet-avatar" id="resultAvatar"></div>
+      <div class="result-pet-name" id="resultName"></div>
+      <div class="result-pet-desc" id="resultDesc"></div>
+      <div class="result-reason-box">
+        <div class="result-reason-label">推荐理由</div>
+        <div class="result-reason-text" id="resultReason"></div>
+      </div>
+      <div class="result-buttons">
+        <button class="result-btn primary" id="resultAdoptBtn">领养它</button>
+        <button class="result-btn secondary" id="resultChooseBtn">自己选择</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="choicePage">
+    <div class="card fade-in">
+      <div class="choice-title">选择你最喜欢的伙伴</div>
+      <p class="choice-subtitle">选一个最想带回家的吧。</p>
+      <div class="choice-grid" id="choiceGrid"></div>
+    </div>
+  </div>
+
+  <div class="page" id="mainPage">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand"><div class="paw">🐾</div><div><h1>Growth Pet</h1><p>陪你成长每一天</p></div></div>
+        <nav class="nav">
+          <a class="active" href="#">⌂ 首页</a><a href="#planList">☑ 成长计划</a><a href="#moodButtons">☼ 心情日记</a><a href="#achievementGrid">♕ 成就墙</a><a href="#">♨ 宠物房间</a><a href="#">⚙ 设置</a>
+        </nav>
+        <div class="sidebar-profile">
+          <div class="mini-pet"><div class="mini-avatar"></div><div><div class="mini-name-row"><input class="pet-name-input" id="petNameInput" type="text" value="月月" maxlength="8"><span class="icon" id="petIcon">🐱</span></div><div class="mini-stat">亲密度 <span id="miniIntimacyText">65/100</span></div></div></div>
+          <div class="mini-bar"><span id="miniIntimacyBar"></span></div>
+          <p class="quote">“每天进步一点点，房间里总有人等你回来。”</p>
+        </div>
+      </aside>
+
+      <main class="content">
+        <section class="hero-head">
+          <div class="hero-title">
+            <h2>这只小猫正在陪你成长 ✨</h2>
+            <p>完成任务获得经验值，让小猫变得更可爱吧！</p>
+          </div>
+          <div class="top-pill">
+            <div class="metric"><span class="coin-icon">🪙</span><div><div class="metric-label">金币</div><div class="metric-value" id="goldValue">0</div></div></div>
+            <div class="metric"><span class="star-icon">⭐</span><div><div class="metric-label">经验</div><div class="metric-value" id="expValue">0</div></div></div>
+            <div class="metric"><span class="level-mini" id="levelBadge">Lv.1</span><div class="exp-track"><span class="exp-bar-fill" id="expBarFill"></span></div><span class="exp-bar-text" id="expBarText">0/100</span></div>
+          </div>
+        </section>
+        <section class="hero">
+          <div class="date-card"><span class="sun">☀</span><div><div id="heroDateText">今天</div><small>自然光很好</small></div></div>
+          <div class="speech" id="petSpeech">主人，你今天过得怎么样呀？我会一直陪着你～</div>
+          <div class="pet-area" id="petArea">
+            <div class="pet" id="pet">
+              <div class="cat3d-mount" id="cat3dMount"></div>
+              <div class="pet-emoji-display" id="petEmojiDisplay">🐱</div>
+              <div class="zzz">💤 Zzz...</div>
+            </div>
+          </div>
+          <div class="stats-section">
+            <div class="stat-item"><div class="stat-header"><span><span class="stat-icon">🥗</span>饱腹值</span><span class="stat-value"><span id="hungerVal">80</span>/100</span></div><div class="stat-bar-bg"><div class="stat-bar-fill" id="hungerBar" style="width:80%"></div></div></div>
+            <div class="stat-item"><div class="stat-header"><span><span class="stat-icon">🛁</span>清洁值</span><span class="stat-value"><span id="cleanVal">80</span>/100</span></div><div class="stat-bar-bg"><div class="stat-bar-fill" id="cleanBar" style="width:80%"></div></div></div>
+            <div class="stat-item"><div class="stat-header"><span><span class="stat-icon">⚡</span>精力值</span><span class="stat-value"><span id="energyVal">80</span>/100</span></div><div class="stat-bar-bg"><div class="stat-bar-fill" id="energyBar" style="width:80%"></div></div></div>
+            <div class="stat-item"><div class="stat-header"><span><span class="stat-icon">♡</span>亲密度</span><span class="stat-value"><span id="intimacyVal">20</span>/100</span></div><div class="stat-bar-bg"><div class="stat-bar-fill" id="intimacyBar" style="width:20%"></div></div></div>
+          </div>
+          <div class="action-section"><div class="action-section-title">照顾它</div><div class="action-buttons"><button class="action-btn feed" data-action="feed"><span class="btn-icon">🍖</span><span>喂食</span></button><button class="action-btn bath" data-action="bath"><span class="btn-icon">🫧</span><span>洗澡</span></button><button class="action-btn play" data-action="play"><span class="btn-icon">🧶</span><span>玩耍</span></button><button class="action-btn sleep" data-action="sleep"><span class="btn-icon">🌙</span><span>睡觉</span></button><button class="action-btn pet" data-action="pet"><span class="btn-icon">🤍</span><span>摸摸</span></button></div></div>
+        </section>
+
+        <section class="dashboard">
+          <div class="panel plan-section"><div class="plan-title">今日成长计划</div><div class="plan-meta"><span id="planDate"></span><span id="planProgressText">今日完成：0 / 4</span></div><div class="plan-progress-bar"><div class="plan-progress-fill" id="planProgressFill"></div></div><div class="plan-list" id="planList"></div></div>
+          <div class="panel mood-section"><div class="mood-title">今日心情</div><div class="mood-guide">今天的你感觉怎么样？</div><div class="mood-buttons" id="moodButtons"><button class="mood-btn" data-mood="happy"><span class="mood-emoji">☺</span><span class="mood-label">开心</span></button><button class="mood-btn" data-mood="calm"><span class="mood-emoji">☻</span><span class="mood-label">平静</span></button><button class="mood-btn" data-mood="sad"><span class="mood-emoji">☹</span><span class="mood-label">难过</span></button><button class="mood-btn" data-mood="anxious"><span class="mood-emoji">⌁</span><span class="mood-label">焦虑</span></button><button class="mood-btn" data-mood="angry"><span class="mood-emoji">⌂</span><span class="mood-label">生气</span></button></div><div class="mood-note">平静的一天也很好，<br>我们慢慢向前走～</div><div class="mood-record">✓ 今日已记录：平静</div></div>
+          <div class="panel goal-section"><div class="goal-title">我的成长目标</div><div class="goal-desc">选择最近最想变好的方向。</div><div class="goal-grid" id="goalGrid"><div class="goal-card" data-goal="frontend"><span class="goal-icon">✕</span><span class="goal-text">学习前端</span><span class="goal-check">✓</span></div><div class="goal-card" data-goal="english"><span class="goal-icon">✕</span><span class="goal-text">准备英语考试</span><span class="goal-check">✓</span></div><div class="goal-card" data-goal="exercise"><span class="goal-icon">✕</span><span class="goal-text">运动减脂</span><span class="goal-check">✓</span></div><div class="goal-card" data-goal="sleep"><span class="goal-icon">○</span><span class="goal-text">早睡早起</span><span class="goal-check">✓</span></div><div class="goal-card" data-goal="organize"><span class="goal-icon">○</span><span class="goal-text">整理生活</span><span class="goal-check">✓</span></div><div class="goal-card" data-goal="emotion"><span class="goal-icon">○</span><span class="goal-text">情绪稳定</span><span class="goal-check">✓</span></div></div><button class="goal-save-btn" id="goalSaveBtn">保存目标</button></div>
+        </section>
+
+        <section class="lower">
+          <div class="panel achievement-section"><div class="achievement-title">成长成就</div><div class="achievement-grid" id="achievementGrid"><div class="achievement-card locked"><span class="achievement-icon">🏅</span><span><span class="achievement-name">初次相遇</span><span class="achievement-desc">第一次领养宠物</span></span><span class="achievement-lock">🔒</span></div><div class="achievement-card locked"><span class="achievement-icon">🏅</span><span><span class="achievement-name">今日启动</span><span class="achievement-desc">完成第一个今日任务</span></span><span class="achievement-lock">🔒</span></div><div class="achievement-card locked"><span class="achievement-icon">⚪</span><span><span class="achievement-name">小小坚持</span><span class="achievement-desc">完成 3 个今日任务</span></span><span class="achievement-lock">🔒</span></div><div class="achievement-card locked"><span class="achievement-icon">🔒</span><span><span class="achievement-name">亲密伙伴</span><span class="achievement-desc">亲密度达到 50</span></span><span class="achievement-lock">🔒</span></div><div class="achievement-card locked"><span class="achievement-icon">🔒</span><span><span class="achievement-name">成长新手</span><span class="achievement-desc">宠物达到 Lv.2</span></span><span class="achievement-lock">🔒</span></div><div class="achievement-card locked"><span class="achievement-icon">🔒</span><span><span class="achievement-name">计划达人</span><span class="achievement-desc">完成全部今日任务</span></span><span class="achievement-lock">🔒</span></div></div><button class="reset-btn" id="resetBtn">重置数据</button></div>
+          <div class="panel"><div class="panel-title">宠物商店</div><div class="shop-list"><div class="shop-item"><span class="shop-emoji">🍰</span><div><div class="shop-name">草莓蛋糕</div><div class="shop-desc">饱腹值 +20</div></div><span class="shop-price">30</span></div><div class="shop-item"><span class="shop-emoji">🧸</span><div><div class="shop-name">小黄鸭玩具</div><div class="shop-desc">亲密度 +15</div></div><span class="shop-price">50</span></div><div class="shop-item"><span class="shop-emoji">🛁</span><div><div class="shop-name">香香泡泡浴</div><div class="shop-desc">清洁值 +25</div></div><span class="shop-price">40</span></div></div></div>
+          <div class="panel"><div class="panel-title">宠物房间</div><div class="placeholder-room"></div><button class="room-btn">进入房间</button></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // ==================== 配置与默认值 ====================
+    const DEFAULT_DATA = {
+      name: '月月', petType: 'moon-cat', petAdopted: true, hunger: 80, energy: 70, clean: 75, intimacy: 65,
+      exp: 350, gold: 1250, level: 3, lastDate: '', mood: 'calm', moodDate: '', moodRewardClaimed: true,
+      goals: ['frontend','english','exercise'],
+      achievements: {},
+      // 自然行为新增字段（老存档自动用默认值补齐，不影响原有数据）
+      lastTick: 0, sleeping: false, lastPet: 0, petCombo: 0, lastAmbient: 0, lastLowStatSpeech: 0,
+    };
+    const STORAGE_KEY = 'growthPetData';
+
+    const SPEECHES = [
+      '你来了，我等你好久啦。','今天也要加油哦！','看到你我就好开心~',
+      '要不要摸摸我的头呀？','你是我的主人最好啦！','我们一起变得更好吧！','咕噜咕噜~ 好幸福呀。',
+      '窗外的阳光好暖和呀～','你在想什么呢？我也想知道。','有你在的房间，空气都是甜的。','今天的风刚刚好，想出去看看吗？'
+    ];
+    const TIME_SPEECHES = {
+      morning: ['早安呀～新的一天开始啦！','你醒啦？我也刚伸完懒腰～','早上好！今天吃点什么好呢？'],
+      afternoon: ['午后的阳光好舒服，想打个盹～','下午啦，要不要一起晒太阳？','嘿嘿，我盯着窗外好久了。'],
+      evening: ['天快黑啦，今天辛苦你了。','晚上的风凉凉的，注意保暖哦。','月亮快出来啦，我喜欢夜晚。'],
+      night: ['还不睡吗？早点休息呀～','夜深了，我陪你。','困了吧？我帮你暖被窝～']
+    };
+    const MOOD_SPEECHES = {
+      happy:'你开心我就开心，咕噜咕噜～', calm:'这样静静待着，真好。',
+      sad:'别难过，我把脑袋借你靠靠。', anxious:'深呼吸，没事的，我在这儿。',
+      angry:'消消气嘛，我蹭蹭你。', tired:'累了就歇会儿，我陪着。'
+    };
+    const INTIMACY_SPEECHES = {
+      high:['我最喜欢你了，没有之一！','只要你在，我哪里都不去。','你是我最重要的人呀～'],
+      low:['那个……可以慢慢认识你吗？','我有点害羞，别盯着我看啦。','你会一直对我好吗？']
+    };
+    const LOW_STAT_SPEECHES = {
+      hunger:['我有点饿了……肚子咕咕叫……','好饿呀，有吃的吗？','再不喂我，我要啃桌子啦！'],
+      energy:['我好困呀……眼睛都睁不开了……','打个哈欠……想睡觉了……','眼皮好重，撑不住啦～'],
+      clean:['我想洗香香……身上黏黏的……','我有点脏脏的，帮我洗澡好不好？','毛毛都打结啦，呜～']
+    };
+    const PET_REACT = {
+      purr:['咕噜咕噜～好舒服。','再摸摸那里，对对对～','你的手好温暖呀。','嘿嘿，我喜欢这样。','舒服得想睡着了～'],
+      annoyed:['别摸啦，烦死了～','够了你，我要生气了！','哼，不理你了。','再摸我就挠你啦！','停停停，毛都被你摸秃了！']
+    };
+
+    const ACTIONS = {
+      feed:{ changes:{hunger:15}, speech:['吃饱啦，好幸福！嘿嘿~','哇，这个好好吃！','舔盘子啦，还要还要～'], refuse:{when:d=>d.hunger>88, msg:['我吃饱啦，吃不下了～','肚子圆滚滚的，别喂啦！']}, effect:'hearts', animation:'happy' },
+      bath:{ changes:{clean:20}, speech:['洗香香啦，毛毛蓬蓬的！','泡泡好多呀，好好玩～','洗完感觉自己美美哒。'], refuse:{when:d=>d.clean>90, msg:['我已经很干净啦～','不用洗不用洗，我不脏！']}, effect:'bubbles', animation:'happy' },
+      play:{ changes:{intimacy:12, energy:-10, hunger:-5}, speech:['它开心地围着你转圈圈！','抓到啦！再扔一次嘛～','玩得好开心，尾巴都翘起来啦！'], weak:{when:d=>d.energy<20, msg:['我好累，不想动……','改天再玩好不好，没力气了。']}, effect:'stars', animation:'happy' },
+      sleep:{ changes:{energy:25, hunger:-5}, speech:['它睡得很安心，因为你在身边。','呼……呼……做好梦呢。','蜷成一小团，睡着了。'], effect:'zzz', animation:'sleep' },
+      pet:{ changes:{intimacy:8}, speech:['它蹭了蹭你的手心。','咕噜咕噜，它很享受。','眯起眼睛，一脸满足。'], effect:'hearts', animation:'happy' }
+    };
+
+    // ===== 自然行为工具：对话挑选 / 状态衰减 / 数字补间 =====
+    let recentSpeeches = [];
+    function rememberSpeech(s){ if(!s) return; recentSpeeches.push(s); while(recentSpeeches.length>6) recentSpeeches.shift(); }
+    function pickFrom(arr){ if(!arr||!arr.length) return ''; const fresh=arr.filter(s=>recentSpeeches.includes(s)===false); const pool=fresh.length?fresh:arr; const c=pool[Math.floor(Math.random()*pool.length)]; rememberSpeech(c); return c; }
+    function getTimeOfDay(){ const h=new Date().getHours(); if(h<11) return 'morning'; if(h<17) return 'afternoon'; if(h<22) return 'evening'; return 'night'; }
+    // 按优先级挑一句：危急状态 > 时段/心情 > 亲密度 > 通用，并避免立即重复
+    function pickSpeech(data, opts){
+      opts = opts || {};
+      const pools = [];
+      const lowKey = ['hunger','energy','clean'].find(k => (data[k]||0) < 30);
+      if (lowKey) pools.push(LOW_STAT_SPEECHES[lowKey]);
+      if (opts.pool) pools.push(opts.pool);
+      if (opts.timeAware) pools.push(TIME_SPEECHES[getTimeOfDay()]);
+      if (data.mood && MOOD_SPEECHES[data.mood]) pools.push([MOOD_SPEECHES[data.mood]]);
+      pools.push((data.intimacy||0) >= 60 ? INTIMACY_SPEECHES.high : INTIMACY_SPEECHES.low);
+      pools.push(SPEECHES);
+      for (const pool of pools) {
+        const fresh = pool.filter(s => !recentSpeeches.includes(s));
+        const usePool = fresh.length ? fresh : pool;
+        const c = usePool[Math.floor(Math.random()*usePool.length)];
+        if (c) { rememberSpeech(c); return c; }
+      }
+      return SPEECHES[0];
+    }
+    function clampStat(v){ return Math.max(0, Math.min(100, Math.round(v))); }
+    // 真实时间衰减：饱腹/精力/清洁随时间下降，睡觉时改为回精力
+    const DECAY = { hunger:1/180, energy:1/240, clean:1/300, intimacy:1/900 };
+    function applyDecay(data, now){
+      const last = data.lastTick || now;
+      const elapsed = Math.min(6*3600, Math.max(0, (now - last)/1000));
+      if (data.sleeping) {
+        data.energy = clampStat((data.energy||0) + elapsed*1.6);
+        data.hunger = clampStat((data.hunger||0) - elapsed*DECAY.hunger*0.5);
+        data.clean  = clampStat((data.clean||0)  - elapsed*DECAY.clean *0.5);
+      } else {
+        data.hunger   = clampStat((data.hunger||0)   - elapsed*DECAY.hunger);
+        data.energy   = clampStat((data.energy||0)   - elapsed*DECAY.energy);
+        data.clean    = clampStat((data.clean||0)    - elapsed*DECAY.clean);
+        data.intimacy = clampStat((data.intimacy||0) - elapsed*DECAY.intimacy);
+      }
+      data.lastTick = now;
+      return data;
+    }
+    // 数字补间（经验/金币滚动累加，不再瞬间跳变）
+    function tweenNumber(el, to, dur){
+      dur = dur || 550;
+      const from = parseInt(el.textContent) || 0;
+      if (from === to) return;
+      const start = performance.now();
+      if (el._tween) cancelAnimationFrame(el._tween);
+      (function step(t){
+        const p = Math.min(1, (t - start)/dur);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(from + (to - from)*eased);
+        if (p < 1) el._tween = requestAnimationFrame(step);
+      })(performance.now());
+    }
+
+    // ==================== 宠物信息库 ====================
+    const PET_INFO = {
+      'cloud-rabbit': { emoji: '🐰', name: '棉花糖', desc: '温柔敏感，会陪你慢慢变好。', reason: '你需要一个温柔、不催促你，但会一直陪着你的伙伴。', avatarClass: 'rabbit' },
+      'sun-dog': { emoji: '🐶', name: '小太阳', desc: '热情活泼，会给你很多正能量。', reason: '你适合一个能带动你、鼓励你、让生活更有活力的伙伴。', avatarClass: 'dog' },
+      'star-fox': { emoji: '🦊', name: '星野', desc: '聪明清醒，会监督你完成计划。', reason: '你需要一个清醒又聪明的伙伴，陪你制定计划、完成目标。', avatarClass: 'fox' },
+      'moon-cat': { emoji: '🐱', name: '月月', desc: '安静神秘，会在夜晚陪你思考。', reason: '你适合一个安静陪伴型伙伴，在你焦虑或疲惫时陪着你。', avatarClass: 'cat' },
+    };
+
+    const ANSWER_TO_PET = { A: 'cloud-rabbit', B: 'sun-dog', C: 'star-fox', D: 'moon-cat' };
+    const TIEBREAK_PRIORITY = ['C', 'A', 'D', 'B'];
+
+    // ==================== 测试题数据 ====================
+    const QUIZ_QUESTIONS = [
+      { question: '周末有一天完全空闲，你最想做什么？', options: [{ key: 'A', text: '安静休息' }, { key: 'B', text: '看剧娱乐' }, { key: 'C', text: '学新东西' }, { key: 'D', text: '出门探索' }] },
+      { question: '你希望宠物更像什么？', options: [{ key: 'A', text: '温柔陪伴者' }, { key: 'B', text: '活泼开心果' }, { key: 'C', text: '聪明监督者' }, { key: 'D', text: '安静守护者' }] },
+      { question: '遇到困难时，你通常会？', options: [{ key: 'A', text: '先逃避一下' }, { key: 'B', text: '找人聊聊' }, { key: 'C', text: '查资料解决' }, { key: 'D', text: '自己硬撑' }] },
+      { question: '你现在最想提升什么？', options: [{ key: 'A', text: '情绪稳定' }, { key: 'B', text: '生活自律' }, { key: 'C', text: '学习能力' }, { key: 'D', text: '身材健康' }] },
+      { question: '你最需要宠物给你什么？', options: [{ key: 'A', text: '安慰' }, { key: 'B', text: '鼓励' }, { key: 'C', text: '计划' }, { key: 'D', text: '陪伴' }] },
+    ];
+
+    // ==================== DOM 元素引用 ====================
+    const welcomePage = document.getElementById('welcomePage');
+    const quizPage = document.getElementById('quizPage');
+    const resultPage = document.getElementById('resultPage');
+    const choicePage = document.getElementById('choicePage');
+    const mainPage = document.getElementById('mainPage');
+    const allPages = [welcomePage, quizPage, resultPage, choicePage, mainPage];
+
+    const petNameInput = document.getElementById('petNameInput');
+    const petSpeech = document.getElementById('petSpeech');
+    const petArea = document.getElementById('petArea');
+    const pet = document.getElementById('pet');
+    const petEmojiDisplay = document.getElementById('petEmojiDisplay');
+    const petIcon = document.getElementById('petIcon');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const startQuizBtn = document.getElementById('startQuizBtn');
+    const quizCard = document.getElementById('quizCard');
+    const quizProgressText = document.getElementById('quizProgressText');
+    const quizProgressFill = document.getElementById('quizProgressFill');
+    const quizLabel = document.getElementById('quizLabel');
+    const quizQuestion = document.getElementById('quizQuestion');
+    const quizOptions = document.getElementById('quizOptions');
+
+    const resultCard = document.getElementById('resultCard');
+    const resultAvatar = document.getElementById('resultAvatar');
+    const resultName = document.getElementById('resultName');
+    const resultDesc = document.getElementById('resultDesc');
+    const resultReason = document.getElementById('resultReason');
+    const resultAdoptBtn = document.getElementById('resultAdoptBtn');
+    const resultChooseBtn = document.getElementById('resultChooseBtn');
+
+    const choiceGrid = document.getElementById('choiceGrid');
+
+    const bars = {
+      hunger:   { bar: document.getElementById('hungerBar'),   val: document.getElementById('hungerVal') },
+      energy:   { bar: document.getElementById('energyBar'),   val: document.getElementById('energyVal') },
+      clean:    { bar: document.getElementById('cleanBar'),    val: document.getElementById('cleanVal') },
+      intimacy: { bar: document.getElementById('intimacyBar'), val: document.getElementById('intimacyVal') },
+    };
+
+    // 经验/金币 DOM
+    const expValueEl = document.getElementById('expValue');
+    const goldValueEl = document.getElementById('goldValue');
+
+    // 等级/经验条 DOM
+    const levelBadge = document.getElementById('levelBadge');
+    const expBarFill = document.getElementById('expBarFill');
+    const expBarText = document.getElementById('expBarText');
+
+    // 日期显示 DOM
+    const planDateEl = document.getElementById('planDate');
+
+    // 心情按钮 DOM
+    const moodButtonsEl = document.getElementById('moodButtons');
+
+    // 成长目标 DOM
+    const goalGridEl = document.getElementById('goalGrid');
+    const goalSaveBtn = document.getElementById('goalSaveBtn');
+
+    // 升级弹窗 DOM
+    const levelupOverlay = document.getElementById('levelupOverlay');
+    const levelupLevelText = document.getElementById('levelupLevelText');
+
+    // 成就弹窗 DOM
+    const achievementPopupOverlay = document.getElementById('achievementPopupOverlay');
+    const achievementPopupTitle = document.getElementById('achievementPopupTitle');
+    const achievementPopupDesc = document.getElementById('achievementPopupDesc');
+
+    // 成就定义
+    const ACHIEVEMENTS = {
+      first_meeting: { name: '初次相遇', desc: '第一次领养宠物', icon: '🐾' },
+      today_start:   { name: '今日启动', desc: '完成第一个今日任务', icon: '📌' },
+      persistence:   { name: '小小坚持', desc: '完成 3 个今日任务', icon: '⭐' },
+      close_friend:  { name: '亲密伙伴', desc: '亲密度达到 50', icon: '💞' },
+      beginner:      { name: '成长新手', desc: '宠物达到 Lv.2', icon: '📈' },
+      plan_master:   { name: '计划达人', desc: '完成全部今日任务', icon: '🎉' },
+    };
+
+    // ==================== 测试题状态 ====================
+    let currentQuestionIndex = 0;
+    let quizAnswers = [];
+
+    // ==================== 数据管理 ====================
+    function loadData() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) return { ...DEFAULT_DATA, ...JSON.parse(saved) };
+      } catch (e) { console.warn('数据加载失败，使用默认值', e); }
+      return { ...DEFAULT_DATA };
+    }
+
+    function saveData(data) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+      catch (e) { console.warn('数据保存失败', e); }
+    }
+
+    // ==================== 页面切换 ====================
+    function showPage(pageToShow) {
+      allPages.forEach(p => p.classList.remove('active'));
+      pageToShow.classList.add('active');
+    }
+
+    function checkAdoptStatus() {
+      const data = loadData();
+      if (data.petAdopted) {
+        renderMainPage(data);
+        showPage(mainPage);
+      } else {
+        showPage(welcomePage);
+      }
+    }
+
+    // ==================== 主页面渲染 ====================
+    function renderMainPage(data) {
+      // 真实时间衰减：离开期间宠物也会饿/困/脏（跨刷新按时间差计算）
+      data = applyDecay(data, Date.now());
+      if (data.sleeping && (data.energy || 0) >= 95) data.sleeping = false;
+      saveData(data);
+
+      const petInfo = PET_INFO[data.petType] || PET_INFO['cloud-rabbit'];
+      petEmojiDisplay.textContent = petInfo.emoji;
+      petIcon.textContent = petInfo.emoji;
+      petNameInput.value = data.name;
+      renderBars(data);
+      // 渲染经验和金币
+      expValueEl.textContent = data.exp || 0;
+      goldValueEl.textContent = data.gold || 0;
+      // 渲染等级和经验条
+      updateLevelAndExp(data.exp || 0);
+      // 检查每日重置
+      checkDailyReset();
+      // 智能开场白：危急状态优先喊，否则按时段问候
+      const lowKey = ['hunger','energy','clean'].find(k => (data[k]||0) < 30);
+      petSpeech.textContent = lowKey ? pickFrom(LOW_STAT_SPEECHES[lowKey]) : pickSpeech(data, { timeAware:true });
+      // 恢复睡眠状态（不再是固定唤醒）
+      setSleeping(!!data.sleeping);
+      // 恢复当天选择的心情
+      renderSavedMood(data.mood || '');
+      // 恢复已保存的成长目标
+      renderSavedGoals(data.goals || []);
+      // 恢复成就状态
+      renderAchievements(data.achievements || {});
+      // 检查成就解锁（新成就才弹窗）
+      checkAchievements(data);
+    }
+
+    function getBarClass(value) {
+      if (value > 70) return 'stat-health';
+      if (value >= 30) return 'stat-warning';
+      return 'stat-danger';
+    }
+
+    function renderBars(data) {
+      ['hunger', 'energy', 'clean', 'intimacy'].forEach(key => {
+        const value = data[key] || 0;
+        const { bar, val } = bars[key];
+        bar.style.width = value + '%';
+        bar.className = 'stat-bar-fill ' + getBarClass(value);
+        val.textContent = value;
+      });
+    }
+
+    function getLowStatSpeech(data) {
+      if (data.hunger < 30) return LOW_STAT_SPEECHES.hunger;
+      if (data.energy < 30) return LOW_STAT_SPEECHES.energy;
+      if (data.clean < 30) return LOW_STAT_SPEECHES.clean;
+      return null;
+    }
+
+    function updateSpeech(text) {
+      petSpeech.textContent = text;
+      petSpeech.classList.add('updated');
+      setTimeout(() => petSpeech.classList.remove('updated'), 300);
+    }
+
+    // ==================== 成就系统 ====================
+    // 渲染成就卡片状态（从 localStorage 恢复）
+    function renderAchievements(achievements) {
+      const grid = document.getElementById('achievementGrid');
+      if (!grid) return;
+      const cards = grid.querySelectorAll('.achievement-card');
+      const keys = Object.keys(ACHIEVEMENTS);
+      cards.forEach((card, i) => {
+        const key = keys[i];
+        if (!key) return;
+        if (achievements && achievements[key]) {
+          card.classList.remove('locked');
+          card.classList.add('unlocked');
+        } else {
+          card.classList.remove('unlocked');
+          card.classList.add('locked');
+        }
+      });
+    }
+
+    // 解锁单个成就
+    function unlockAchievement(key) {
+      const data = loadData();
+      if (!data.achievements) data.achievements = {};
+      if (data.achievements[key]) return; // 已解锁，不重复
+
+      data.achievements[key] = true;
+      saveData(data);
+
+      // 更新 UI
+      renderAchievements(data.achievements);
+
+      // 显示弹窗
+      const ach = ACHIEVEMENTS[key];
+      if (!ach) return;
+      achievementPopupTitle.textContent = ach.name;
+      achievementPopupDesc.textContent = ach.desc;
+      document.querySelector('.achievement-popup-emoji').textContent = ach.icon;
+      achievementPopupOverlay.classList.add('show');
+
+      // 3 秒后自动关闭
+      setTimeout(() => {
+        achievementPopupOverlay.classList.remove('show');
+      }, 3000);
+    }
+
+    // 检查所有成就条件
+    function checkAchievements(data) {
+      if (!data.achievements) data.achievements = {};
+
+      // 1. 初次相遇：petAdopted 为 true
+      if (data.petAdopted) unlockAchievement('first_meeting');
+
+      // 2. 今日启动：今天完成至少 1 个任务
+      const completedCount = (dailyTasks || []).filter(t => t.completed).length;
+      if (completedCount >= 1) unlockAchievement('today_start');
+
+      // 3. 小小坚持：今天完成至少 3 个任务
+      if (completedCount >= 3) unlockAchievement('persistence');
+
+      // 4. 亲密伙伴：亲密度达到 50
+      if ((data.intimacy || 0) >= 50) unlockAchievement('close_friend');
+
+      // 5. 成长新手：宠物达到 Lv.2
+      if (getLevel(data.exp || 0) >= 2) unlockAchievement('beginner');
+
+      // 6. 计划达人：完成全部任务
+      const totalTasks = (dailyTasks || []).length;
+      if (totalTasks > 0 && completedCount >= totalTasks) unlockAchievement('plan_master');
+    }
+
+    // ==================== 推荐逻辑 ====================
+    function calculateRecommendation(answers) {
+      const counts = { A: 0, B: 0, C: 0, D: 0 };
+      answers.forEach(a => { if (counts[a] !== undefined) counts[a]++; });
+      const maxCount = Math.max(counts.A, counts.B, counts.C, counts.D);
+      for (const letter of TIEBREAK_PRIORITY) {
+        if (counts[letter] === maxCount) return ANSWER_TO_PET[letter];
+      }
+      return 'cloud-rabbit';
+    }
+
+    function showResult() {
+      const petType = calculateRecommendation(quizAnswers);
+      const petInfo = PET_INFO[petType];
+      resultAvatar.textContent = petInfo.emoji;
+      resultAvatar.className = 'result-pet-avatar ' + petInfo.avatarClass;
+      resultName.textContent = petInfo.name;
+      resultDesc.textContent = petInfo.desc;
+      resultReason.textContent = petInfo.reason;
+      showPage(resultPage);
+    }
+
+    // ==================== 领养保存 ====================
+    function adoptPet(petType) {
+      const petInfo = PET_INFO[petType];
+      if (!petInfo) return;
+      const currentData = loadData();
+      currentData.petType = petType;
+      currentData.petAdopted = true;
+      currentData.name = petInfo.name;
+      saveData(currentData);
+      renderMainPage(currentData);
+      showPage(mainPage);
+    }
+
+    // ==================== 测试题逻辑 ====================
+    function startQuiz() {
+      currentQuestionIndex = 0;
+      quizAnswers = [];
+      renderQuestion();
+      showPage(quizPage);
+    }
+
+    function renderQuestion() {
+      const q = QUIZ_QUESTIONS[currentQuestionIndex];
+      const total = QUIZ_QUESTIONS.length;
+      const current = currentQuestionIndex + 1;
+
+      quizProgressText.textContent = `第 ${current} / ${total} 题`;
+      quizProgressFill.style.width = (current / total * 100) + '%';
+      quizLabel.textContent = `QUESTION ${current}`;
+      quizQuestion.textContent = q.question;
+      quizOptions.innerHTML = '';
+
+      quizCard.classList.remove('slide-in');
+      void quizCard.offsetWidth;
+      quizCard.classList.add('slide-in');
+
+      q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option';
+        btn.innerHTML = `<span class="quiz-option-letter">${opt.key}</span><span class="quiz-option-text">${opt.text}</span>`;
+
+        btn.addEventListener('click', () => {
+          quizAnswers.push(opt.key);
+          btn.style.borderColor = '#ff9a9e';
+          btn.style.background = 'linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%)';
+
+          setTimeout(() => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < total) {
+              renderQuestion();
+            } else {
+              showResult();
+            }
+          }, 200);
+        });
+
+        quizOptions.appendChild(btn);
+      });
+    }
+
+    // ==================== 自由选择页面 ====================
+    function showChoicePage() {
+      choiceGrid.innerHTML = '';
+      Object.entries(PET_INFO).forEach(([type, info]) => {
+        const card = document.createElement('div');
+        card.className = 'choice-pet-card';
+        card.innerHTML = `
+          <div class="choice-pet-emoji">${info.emoji}</div>
+          <div class="choice-pet-name">${info.name}</div>
+          <div class="choice-pet-desc">${info.desc}</div>
+          <button class="choice-pet-btn ${info.avatarClass}" data-pet-type="${type}">选择它</button>
+        `;
+        const selectBtn = card.querySelector('.choice-pet-btn');
+        selectBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          adoptPet(type);
+        });
+        choiceGrid.appendChild(card);
+      });
+      showPage(choicePage);
+    }
+
+    // ==================== 特效系统 ====================
+    function spawnEffect(type) {
+      const count = 6;
+      const emojis = {
+        hearts: ['💖', '💕', '💗', '❤️', '🩷', '💝'],
+        bubbles: ['🫧', '✨', '💧', '🫧', '✨', '💫'],
+        stars: ['⭐', '✨', '💫', '🌟', '⚡', '💥'],
+      };
+      const list = emojis[type] || emojis.hearts;
+
+      for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+          const particle = document.createElement('div');
+          particle.className = 'effect-particle';
+          particle.textContent = list[Math.floor(Math.random() * list.length)];
+          const rect = petArea.getBoundingClientRect();
+          const x = Math.random() * rect.width;
+          const y = Math.random() * rect.height * 0.6 + rect.height * 0.2;
+          particle.style.left = x + 'px';
+          particle.style.top = y + 'px';
+          particle.style.fontSize = (16 + Math.random() * 12) + 'px';
+          petArea.appendChild(particle);
+          setTimeout(() => particle.remove(), 1000);
+        }, i * 100);
+      }
+    }
+
+    // ==================== 互动按钮逻辑 ====================
+    function doAction(actionKey) {
+      const action = ACTIONS[actionKey];
+      if (!action) return;
+      let data = loadData();
+
+      // 睡觉是状态切换：再点一次=醒；精力回满也会自然醒
+      if (actionKey === 'sleep') {
+        if (data.sleeping) {
+          data.sleeping = false; saveData(data); setSleeping(false);
+          updateSpeech(pickFrom(['醒啦～伸个懒腰！','唔……再让我睡会儿嘛……','好精神呀！']));
+        } else {
+          data.sleeping = true; saveData(data); setSleeping(true);
+          updateSpeech(pickFrom(action.speech));
+        }
+        return;
+      }
+
+      // 其它照顾动作会先把猫唤醒
+      if (data.sleeping) { data.sleeping = false; setSleeping(false); saveData(data); }
+
+      // 像真猫一样会拒绝：吃饱了不再吃、已经很干净不再洗
+      if (action.refuse && action.refuse.when(data)) {
+        updateSpeech(pickFrom(action.refuse.msg));
+        playPetAnimation('happy');
+        return;
+      }
+      // 状态疲弱时效果打折：太累还玩，亲密度收益减半且不同台词
+      const weak = !!(action.weak && action.weak.when(data));
+
+      const changes = Object.assign({}, action.changes);
+      if (weak && changes.intimacy) changes.intimacy = Math.round(changes.intimacy / 2);
+      for (const [key, delta] of Object.entries(changes)) {
+        data[key] = clampStat((data[key] || 0) + delta);
+      }
+      saveData(data);
+      renderBars(data);
+      updateSpeech(weak ? pickFrom(action.weak.msg) : pickFrom(action.speech));
+      if (action.effect !== 'zzz') spawnEffect(action.effect);
+      playPetAnimation(action.animation);
+      // 检查成就解锁
+      checkAchievements(data);
+    }
+
+    function playPetAnimation(type) {
+      pet.classList.remove('bouncing', 'happy', 'sleeping');
+      if (type === 'happy') {
+        void pet.offsetWidth;
+        pet.classList.add('happy');
+        setTimeout(() => pet.classList.remove('happy'), 800);
+      }
+    }
+
+    function setSleeping(sleeping) {
+      pet.classList.toggle('sleeping', sleeping);
+    }
+
+    // ==================== 今日成长计划逻辑 ====================
+
+    // 各成长目标对应的任务模板
+    const GOAL_TASKS = {
+      frontend: [
+        { name: '学习 HTML/CSS/JS 30 分钟', exp: 30, gold: 20 },
+        { name: '完成一个小页面练习', exp: 25, gold: 15 },
+      ],
+      english: [
+        { name: '背单词 20 个', exp: 20, gold: 15 },
+        { name: '听力练习 20 分钟', exp: 20, gold: 15 },
+      ],
+      exercise: [
+        { name: '快走或跳操 20 分钟', exp: 25, gold: 15 },
+        { name: '拉伸 10 分钟', exp: 15, gold: 10 },
+      ],
+      sleep: [
+        { name: '23:30 前准备睡觉', exp: 20, gold: 15 },
+        { name: '明天起床后打卡', exp: 15, gold: 10 },
+      ],
+      organize: [
+        { name: '整理桌面 10 分钟', exp: 15, gold: 10 },
+        { name: '清理一个文件夹或相册', exp: 15, gold: 10 },
+      ],
+      emotion: [
+        { name: '写下今天的情绪', exp: 10, gold: 10 },
+        { name: '做 3 分钟深呼吸', exp: 10, gold: 10 },
+      ],
+    };
+
+    // 默认任务（没有选择目标时）
+    const DEFAULT_TASKS = [
+      { name: '前端学习 30 分钟', exp: 30, gold: 20 },
+      { name: '英语学习 20 分钟', exp: 20, gold: 15 },
+      { name: '运动 20 分钟', exp: 25, gold: 15 },
+      { name: '整理房间 10 分钟', exp: 10, gold: 10 },
+    ];
+
+    // 每日任务 DOM
+    const planListEl = document.getElementById('planList');
+
+    // 根据用户目标生成任务列表（最多 4 个）
+    function generateTasks(goals) {
+      if (!goals || goals.length === 0) {
+        return DEFAULT_TASKS.map(t => ({ ...t, completed: false }));
+      }
+      // 从不同目标轮流取任务组合
+      const tasks = [];
+      const goalOrder = [...goals];
+      let idx = 0;
+      while (tasks.length < 4) {
+        const goal = goalOrder[idx % goalOrder.length];
+        const template = GOAL_TASKS[goal];
+        if (!template) break;
+        const taskIdx = Math.floor(tasks.length / goalOrder.length);
+        if (taskIdx < template.length) {
+          tasks.push({ ...template[taskIdx], completed: false });
+        } else {
+          // 目标的所有任务取完了，跳过
+        }
+        idx++;
+        // 如果遍历了一圈没有新增任务，说明全部取完
+        if (tasks.length === 0 || idx >= goalOrder.length * 2) {
+          // 不足 4 个，用默认任务补齐
+          for (const dt of DEFAULT_TASKS) {
+            if (tasks.length >= 4) break;
+            if (!tasks.find(t => t.name === dt.name)) {
+              tasks.push({ ...dt, completed: false });
+            }
+          }
+          break;
+        }
+      }
+      return tasks.slice(0, 4);
+    }
+
+    // 当前任务列表（运行时）
+    let dailyTasks = [];
+
+    // 渲染任务列表到页面
+    function renderPlanList() {
+      planListEl.innerHTML = '';
+      dailyTasks.forEach((task, i) => {
+        const div = document.createElement('div');
+        div.className = 'plan-task' + (task.completed ? ' completed' : '');
+        div.dataset.taskIndex = i;
+        div.innerHTML = `
+          <div class="plan-task-left">
+            <div class="plan-task-name">${task.name}</div>
+            <div class="plan-task-reward">奖励经验 +${task.exp} 金币 +${task.gold}</div>
+          </div>
+          <button class="plan-task-btn">${task.completed ? '✅ 已完成' : '完成'}</button>
+        `;
+        if (task.completed) {
+          div.querySelector('.plan-task-btn').classList.add('done');
+        }
+        planListEl.appendChild(div);
+      });
+      updatePlanProgress();
+    }
+
+    // 更新进度显示
+    function updatePlanProgress() {
+      const doneCount = dailyTasks.filter(t => t.completed).length;
+      const total = dailyTasks.length || 1;
+      document.getElementById('planProgressText').textContent = `今日完成：${doneCount} / ${total}`;
+      document.getElementById('planProgressFill').style.width = (doneCount / total * 100) + '%';
+    }
+
+    // 保存今日任务到 localStorage
+    function saveDailyTasks() {
+      const data = loadData();
+      data.dailyTasks = dailyTasks;
+      saveData(data);
+    }
+
+    // 根据目标生成并显示今日计划
+    function buildTodayPlan(goals) {
+      dailyTasks = generateTasks(goals);
+      saveDailyTasks();
+      renderPlanList();
+    }
+
+    // 增加经验并更新显示
+    function addExp(amount) {
+      const data = loadData();
+      const oldLevel = getLevel(data.exp || 0);
+      data.exp = (data.exp || 0) + amount;
+      const newLevel = getLevel(data.exp);
+      data.level = newLevel;
+      saveData(data);
+      tweenNumber(expValueEl, data.exp);
+      updateLevelAndExp(data.exp);
+      bumpValue(expValueEl);
+
+      // 升级时播放庆祝动画
+      if (newLevel > oldLevel) {
+        showLevelUpAnimation(newLevel);
+        // 升级后检查成就
+        checkAchievements(data);
+      }
+    }
+
+    // 增加金币并更新显示
+    function addGold(amount) {
+      const data = loadData();
+      data.gold = (data.gold || 0) + amount;
+      saveData(data);
+      tweenNumber(goldValueEl, data.gold);
+      bumpValue(goldValueEl);
+    }
+
+    // 数值变化弹跳动画
+    function bumpValue(el) {
+      el.classList.remove('bump');
+      void el.offsetWidth;
+      el.classList.add('bump');
+      setTimeout(() => el.classList.remove('bump'), 350);
+    }
+
+    // 根据总经验计算等级
+    function getLevel(exp) {
+      return Math.floor(exp / 100) + 1;
+    }
+
+    // 当前等级内的经验进度（0-99）
+    function getExpInLevel(exp) {
+      return exp % 100;
+    }
+
+    // 更新等级和经验条显示
+    function updateLevelAndExp(exp) {
+      const level = getLevel(exp);
+      const currentExp = getExpInLevel(exp);
+      levelBadge.textContent = `Lv.${level}`;
+      expBarFill.style.width = currentExp + '%';
+      expBarText.textContent = `${currentExp}/100`;
+    }
+
+    // 显示升级庆祝动画
+    function showLevelUpAnimation(newLevel) {
+      // 设置等级文字
+      levelupLevelText.textContent = `Lv.${newLevel}`;
+
+      // 显示弹窗
+      levelupOverlay.classList.add('show');
+
+      // 播放星星粒子特效
+      spawnEffect('stars');
+      setTimeout(() => spawnEffect('stars'), 400);
+
+      // 宠物开心动画
+      playPetAnimation('happy');
+
+      // 3秒后自动消失
+      setTimeout(() => {
+        levelupOverlay.classList.remove('show');
+      }, 3000);
+    }
+
+    // 获取今天的日期字符串 YYYY-MM-DD
+    function getTodayStr() {
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    // 检查并执行每日重置
+    function checkDailyReset() {
+      const today = getTodayStr();
+      const data = loadData();
+
+      // 保存今天日期
+      if (data.lastDate !== today) {
+        // 新的一天，重置所有每日状态
+        data.mood = '';
+        data.moodDate = '';
+        data.moodRewardClaimed = false;
+        saveData(data);
+        resetMoodUI();
+        // 重新生成今日任务
+        buildTodayPlan(data.goals || []);
+      } else {
+        // 同一天，恢复已保存的任务状态
+        dailyTasks = data.dailyTasks || [];
+        renderPlanList();
+      }
+
+      // 显示今天日期
+      planDateEl.textContent = today;
+
+      // 更新保存的日期
+      data.lastDate = today;
+      saveData(data);
+    }
+
+    // ==================== 今日心情逻辑 ====================
+
+    // 心情回应文案
+    const MOOD_RESPONSES = {
+      happy: '太好啦！看到你开心，我也开心得转圈圈！今天会是很棒的一天～',
+      calm: '平静的一天也很好呀。不急不慢，我们一起向前走。',
+      sad: '难过也没关系……我会安安静静陪在你身边的。',
+      anxious: '深呼吸一下好不好？我们不用一下子把所有事都做完，慢慢来就好啦。',
+      angry: '我知道你现在很不舒服……别着急，也别怪自己，先缓一缓吧。',
+      tired: '辛苦啦，今天就慢一点吧。我会陪着你的，好好休息一下。',
+    };
+
+    // 重置心情按钮 UI
+    function resetMoodUI() {
+      moodButtonsEl.querySelectorAll('.mood-btn').forEach(btn => {
+        btn.classList.remove('selected');
+      });
+    }
+
+    // 渲染保存的心情状态
+    function renderSavedMood(mood) {
+      resetMoodUI();
+      if (mood) {
+        const btn = moodButtonsEl.querySelector(`[data-mood="${mood}"]`);
+        if (btn) btn.classList.add('selected');
+      }
+    }
+
+    // 选择心情
+    function selectMood(moodKey) {
+      const data = loadData();
+
+      // 更新选中状态
+      renderSavedMood(moodKey);
+
+      // 更新宠物话语
+      updateSpeech(MOOD_RESPONSES[moodKey] || '');
+
+      // 保存心情到 localStorage
+      data.mood = moodKey;
+      data.moodDate = getTodayStr();
+
+      // 每天只能获得一次心情属性奖励
+      // 如果今天已经领取过，只更新文字，不加属性
+      if (!data.moodRewardClaimed) {
+        // 根据心情类型增加对应属性
+        const moodBonuses = {
+          happy:   { intimacy: 5 },
+          calm:    { energy: 5 },
+          sad:     { intimacy: 8 },
+          anxious: { energy: 5, intimacy: 5 },
+          angry:   { intimacy: 5 },
+          tired:   { energy: 10 },
+        };
+        const bonus = moodBonuses[moodKey] || {};
+        for (const [key, delta] of Object.entries(bonus)) {
+          data[key] = Math.min(100, (data[key] || 0) + delta);
+        }
+        data.moodRewardClaimed = true;
+        saveData(data);
+        renderBars(data);
+        playPetAnimation('happy');
+      } else {
+        // 重复切换，只保存心情，不加属性
+        saveData(data);
+      }
+    }
+
+    // 绑定心情按钮点击事件
+    moodButtonsEl.querySelectorAll('.mood-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectMood(btn.dataset.mood);
+      });
+    });
+
+    // ==================== 成长目标逻辑 ====================
+
+    // 渲染已保存的目标选中状态
+    function renderSavedGoals(goals) {
+      goalGridEl.querySelectorAll('.goal-card').forEach(card => {
+        const goal = card.dataset.goal;
+        card.classList.toggle('selected', goals.includes(goal));
+      });
+    }
+
+    // 保存目标
+    function saveGoals() {
+      const selectedGoals = [];
+      goalGridEl.querySelectorAll('.goal-card.selected').forEach(card => {
+        selectedGoals.push(card.dataset.goal);
+      });
+      const data = loadData();
+
+      // 如果目标有变化，询问是否重新生成今日计划
+      const oldGoals = data.goals || [];
+      const goalsChanged = JSON.stringify(oldGoals.sort()) !== JSON.stringify(selectedGoals.sort());
+
+      data.goals = selectedGoals;
+
+      if (goalsChanged && oldGoals.length > 0) {
+        if (confirm('目标已更新，是否重新生成今日成长计划？')) {
+          dailyTasks = generateTasks(selectedGoals);
+          data.dailyTasks = dailyTasks;
+          saveData(data);
+          renderPlanList();
+        }
+      }
+
+      saveData(data);
+      updateSpeech('我记住你的目标啦，我们一起慢慢变好。');
+    }
+
+    // 绑定目标卡片点击（选中/取消）
+    goalGridEl.querySelectorAll('.goal-card').forEach(card => {
+      card.addEventListener('click', () => {
+        card.classList.toggle('selected');
+      });
+    });
+
+    // 绑定保存按钮
+    goalSaveBtn.addEventListener('click', () => {
+      saveGoals();
+    });
+
+    // 绑定任务按钮点击事件（事件委托到 planList）
+    planListEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('.plan-task-btn');
+      if (!btn) return;
+      const card = btn.closest('.plan-task');
+      const index = parseInt(card.dataset.taskIndex);
+
+      // 如果已经完成，不重复执行
+      if (dailyTasks[index] && dailyTasks[index].completed) return;
+
+      // 标记为已完成
+      dailyTasks[index].completed = true;
+      saveDailyTasks();
+
+      // 按钮和卡片变样式
+      btn.classList.add('done');
+      btn.textContent = '✅ 已完成';
+      card.classList.add('completed');
+
+      // 增加经验和金币
+      const task = dailyTasks[index];
+      addExp(task.exp);
+      addGold(task.gold);
+
+      // 亲密度 +5
+      const data = loadData();
+      data.intimacy = Math.min(100, (data.intimacy || 0) + 5);
+      saveData(data);
+      renderBars(data);
+
+      // 宠物说话
+      updateSpeech('你完成任务啦，我为你骄傲！');
+
+      // 星星特效
+      spawnEffect('stars');
+
+      // 宠物开心动画
+      playPetAnimation('happy');
+
+      // 更新进度
+      updatePlanProgress();
+
+      // 检查成就解锁
+      const data2 = loadData();
+      checkAchievements(data2);
+    });
+
+    // ==================== 事件绑定 ====================
+    startQuizBtn.addEventListener('click', startQuiz);
+
+    resultAdoptBtn.addEventListener('click', () => {
+      adoptPet(calculateRecommendation(quizAnswers));
+    });
+
+    resultChooseBtn.addEventListener('click', () => {
+      showChoicePage();
+    });
+
+    document.querySelectorAll('.action-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.action;
+        if (action) {
+          doAction(action);
+          const ripple = document.createElement('span');
+          ripple.className = 'btn-ripple';
+          ripple.style.cssText = 'left:50%;top:50%;width:40px;height:40px;margin-left:-20px;margin-top:-20px;';
+          btn.appendChild(ripple);
+          setTimeout(() => ripple.remove(), 500);
+        }
+      });
+    });
+
+    petArea.addEventListener('click', (e) => {
+      let data = loadData();
+      // 睡着时点一下 = 轻轻唤醒（不再无响应）
+      if (data.sleeping || pet.classList.contains('sleeping')) {
+        data.sleeping = false; saveData(data); setSleeping(false);
+        updateSpeech(pickFrom(['唔……醒啦？','被你弄醒啦，伸懒腰～','再让我睡一会儿嘛……']));
+        return;
+      }
+      const now = Date.now();
+      // 连击combo：1.3秒内连续摸累加，超过5次猫会烦
+      data.petCombo = (now - (data.lastPet || 0) < 1300) ? (data.petCombo || 0) + 1 : 1;
+      data.lastPet = now;
+
+      if (data.petCombo > 5) {
+        // 摸太频繁 → 烦躁，亲密度 -1
+        data.intimacy = clampStat((data.intimacy || 0) - 1);
+        saveData(data); renderBars(data);
+        updateSpeech(pickFrom(PET_REACT.annoyed));
+        pet.classList.remove('bouncing','happy'); void pet.offsetWidth;
+        pet.classList.add('happy'); setTimeout(() => pet.classList.remove('happy'), 500);
+        checkAchievements(data);
+        return;
+      }
+      // 正常抚摸 → 咕噜咕噜 + 亲密度 +1
+      pet.classList.remove('bouncing','happy'); void pet.offsetWidth;
+      pet.classList.add('bouncing'); setTimeout(() => pet.classList.remove('bouncing'), 500);
+      spawnEffect('hearts');
+      if (data.intimacy < 100) data.intimacy = clampStat((data.intimacy || 0) + 1);
+      saveData(data); renderBars(data);
+      updateSpeech(pickFrom(PET_REACT.purr));
+      checkAchievements(data);
+    });
+
+    petNameInput.addEventListener('change', () => {
+      let data = loadData();
+      const newName = petNameInput.value.trim();
+      if (newName) { data.name = newName; saveData(data); }
+      else { petNameInput.value = data.name; }
+    });
+
+    resetBtn.addEventListener('click', () => {
+      if (confirm('确定要重置所有数据吗？宠物会忘记你们的回忆哦...')) {
+        localStorage.removeItem(STORAGE_KEY);
+        setSleeping(false);
+        quizAnswers = [];
+        currentQuestionIndex = 0;
+        dailyTasks = [];
+        // 重置心情
+        resetMoodUI();
+        // 重置目标
+        goalGridEl.querySelectorAll('.goal-card').forEach(card => {
+          card.classList.remove('selected');
+        });
+        checkAdoptStatus();
+      }
+    });
+
+    // ==================== 背景装饰 ====================
+    function createBgDots() {
+      const container = document.getElementById('bgDots');
+      const colors = ['#FFB8C8', '#FFD54F', '#A5D6A7', '#90CAF9', '#CE93D8'];
+      for (let i = 0; i < 15; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'bg-dot';
+        const size = Math.random() * 80 + 30;
+        dot.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};`;
+        container.appendChild(dot);
+      }
+    }
+
+
+
+    // ===== Warm layout compatibility: sync sidebar/date visuals =====
+    const __oldRenderBars = renderBars;
+    renderBars = function(data) {
+      __oldRenderBars(data);
+      const miniText = document.getElementById('miniIntimacyText');
+      const miniBar = document.getElementById('miniIntimacyBar');
+      if (miniText) miniText.textContent = (data.intimacy || 0) + '/100';
+      if (miniBar) miniBar.style.width = (data.intimacy || 0) + '%';
+    };
+    const __oldCheckDailyReset = checkDailyReset;
+    checkDailyReset = function() {
+      __oldCheckDailyReset();
+      const heroDate = document.getElementById('heroDateText');
+      if (heroDate) {
+        const d = new Date();
+        heroDate.textContent = d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日';
+      }
+    };
+
+
+    // ===== Real photo kitten subtle motion =====
+    function setupRealPhotoCatMotion() {
+      if (!petArea || !pet) return;
+      let raf = null;
+      const maxX = 7;
+      const maxY = 4;
+      const maxR = 1.2;
+      function resetLook() {
+        petArea.style.setProperty('--look-x', '0px');
+        petArea.style.setProperty('--look-y', '0px');
+        petArea.style.setProperty('--look-r', '0deg');
+      }
+      petArea.addEventListener('mousemove', (event) => {
+        const rect = petArea.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const nx = Math.max(-1, Math.min(1, (event.clientX - cx) / (rect.width / 2)));
+        const ny = Math.max(-1, Math.min(1, (event.clientY - cy) / (rect.height / 2)));
+        if (raf) cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          petArea.style.setProperty('--look-x', (nx * maxX).toFixed(1) + 'px');
+          petArea.style.setProperty('--look-y', (ny * maxY).toFixed(1) + 'px');
+          petArea.style.setProperty('--look-r', (nx * maxR).toFixed(2) + 'deg');
+        });
+      });
+      petArea.addEventListener('mouseleave', resetLook);
+      function randomBlink() {
+        if (pet.classList.contains('sleeping')) {
+          setTimeout(randomBlink, 1800 + Math.random() * 2200);
+          return;
+        }
+        pet.classList.add('blinking');
+        setTimeout(() => pet.classList.remove('blinking'), 220);
+        setTimeout(randomBlink, 3600 + Math.random() * 5200);
+      }
+      setTimeout(randomBlink, 1600);
+    }
+
+    // ==================== 生命循环：随时间衰减 + 自然醒 + 自言自语 ====================
+    function startLifeLoop() {
+      setInterval(() => {
+        let data = loadData();
+        if (!data.petAdopted) return;
+        const now = Date.now();
+
+        // 睡够了自然醒（精力回满）
+        if (data.sleeping && (data.energy || 0) >= 95) {
+          data.sleeping = false; saveData(data); setSleeping(false);
+          updateSpeech(pickFrom(['醒啦～精神满满！','睡得好香呀，伸个懒腰～']));
+        }
+
+        data = applyDecay(data, now);
+        saveData(data);
+        renderBars(data);
+
+        // 饿/困/脏时主动提醒（60s 节流，不刷屏）
+        const lowKey = ['hunger','energy','clean'].find(k => (data[k]||0) < 30);
+        if (lowKey && !data.sleeping && now - (data.lastLowStatSpeech || 0) > 60000) {
+          data.lastLowStatSpeech = now; saveData(data);
+          updateSpeech(pickFrom(LOW_STAT_SPEECHES[lowKey]));
+          return;
+        }
+        // 状态良好时偶尔自言自语（约 60~90s 一次），显得它真的活着
+        if (!data.sleeping && (data.hunger||0) >= 30 && (data.energy||0) >= 30 && (data.clean||0) >= 30
+            && now - (data.lastAmbient || 0) > 60000 && Math.random() < 0.5) {
+          data.lastAmbient = now; saveData(data);
+          updateSpeech(pickSpeech(data, { timeAware:true }));
+        }
+      }, 30000);
+    }
+
+    // ==================== 初始化 ====================
+    createBgDots();
+    setupRealPhotoCatMotion();
+    startLifeLoop();
+    checkAdoptStatus();
+  </script>
+
+  <!-- Three.js 真 3D 小猫：订阅 #pet 的 class（happy/sleeping/blinking/bouncing）与 petArea 的 --look-x/--look-y，业务逻辑零改动 -->
+  <script type="importmap">
+  { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+  </script>
+  <script type="module">
+  import * as THREE from 'three';
+
+  (function () {
+    const mount = document.getElementById('cat3dMount');
+    const pet = document.getElementById('pet');
+    const petArea = document.getElementById('petArea');
+    if (!mount || !pet || !petArea) return;
+
+    let W = mount.clientWidth || 300, H = mount.clientHeight || 330;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 100);
+    camera.position.set(0, 0.5, 6.4);
+    camera.lookAt(0, 0.35, 0);
+
+    let renderer;
+    try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); }
+    catch (e) { console.warn('WebGL 不可用，3D 小猫未启动', e); return; }
+    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    renderer.setSize(W, H);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+    renderer.setClearAlpha(0);
+    mount.appendChild(renderer.domElement);
+
+    // 光照：天顶柔光 + 主光 + 补光 + 边缘光（提升立体感与质感）
+    scene.add(new THREE.HemisphereLight(0xfff6ec, 0xd9c4a8, 0.95));
+    const key = new THREE.DirectionalLight(0xffffff, 1.3); key.position.set(3, 5, 4); scene.add(key);
+    const fill = new THREE.DirectionalLight(0xffe8d0, 0.42); fill.position.set(-3.5, 2, 2.5); scene.add(fill);
+    const rim = new THREE.DirectionalLight(0xfff0e0, 0.4); rim.position.set(-1, 3.5, -4); scene.add(rim);
+
+    // 材质
+    const fur = new THREE.MeshStandardMaterial({ color: 0xf2e1c9, roughness: 0.85 });
+    const furLight = new THREE.MeshStandardMaterial({ color: 0xfff6ec, roughness: 0.85 });
+    const earIn = new THREE.MeshStandardMaterial({ color: 0xf6b0c0, roughness: 0.7 });
+    const eyeMat = new THREE.MeshStandardMaterial({ color: 0x23232b, roughness: 0.16 });
+    const glintMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const noseMat = new THREE.MeshStandardMaterial({ color: 0xf29ab0, roughness: 0.5 });
+    const collarMat = new THREE.MeshStandardMaterial({ color: 0xf0a23e, roughness: 0.55 });
+    const bellMat = new THREE.MeshStandardMaterial({ color: 0xf7c14b, roughness: 0.3, metalness: 0.25, emissive: 0x5a3d00, emissiveIntensity: 0.18 });
+
+    // 接地软阴影
+    (function () {
+      const c = document.createElement('canvas'); c.width = 256; c.height = 128;
+      const ctx = c.getContext('2d');
+      const g = ctx.createRadialGradient(128, 64, 4, 128, 64, 120);
+      g.addColorStop(0, 'rgba(80,52,28,0.5)'); g.addColorStop(1, 'rgba(80,52,28,0)');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, 256, 128);
+      const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+      const sh = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 1.8),
+        new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
+      sh.rotation.x = -Math.PI / 2; sh.position.y = -1.2; scene.add(sh);
+    })();
+
+    const cat = new THREE.Group(); scene.add(cat);
+
+    // 身体
+    const body = new THREE.Group(); cat.add(body);
+    const torso = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 32), fur);
+    torso.scale.set(0.85, 1.05, 0.8); torso.position.y = -0.15; body.add(torso);
+    const belly = new THREE.Mesh(new THREE.SphereGeometry(0.62, 32, 24), furLight);
+    belly.scale.set(1, 1.05, 0.5); belly.position.set(0, -0.12, 0.5); body.add(belly);
+    const pawGeo = new THREE.SphereGeometry(0.22, 24, 18);
+    const pawL = new THREE.Mesh(pawGeo, fur); pawL.position.set(-0.34, -0.95, 0.45); body.add(pawL);
+    const pawR = new THREE.Mesh(pawGeo, fur); pawR.position.set(0.34, -0.95, 0.45); body.add(pawR);
+    const collar = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.09, 18, 44), collarMat);
+    collar.rotation.x = Math.PI / 2; collar.position.y = 0.22; body.add(collar);
+    const bell = new THREE.Mesh(new THREE.SphereGeometry(0.14, 24, 18), bellMat);
+    bell.position.set(0, 0.16, 0.84); body.add(bell);
+
+    // 头（Q 版大头）
+    const headPivot = new THREE.Group(); headPivot.position.y = 1.0; cat.add(headPivot);
+    const head = new THREE.Group(); headPivot.add(head);
+    const skull = new THREE.Mesh(new THREE.SphereGeometry(0.9, 40, 32), fur);
+    skull.scale.set(1, 0.96, 1); head.add(skull);
+    const muzzle = new THREE.Mesh(new THREE.SphereGeometry(0.34, 28, 22), furLight);
+    muzzle.scale.set(1.1, 0.78, 0.36); muzzle.position.set(0, -0.22, 0.82); head.add(muzzle);
+
+    function makeEar(side) {
+      const g = new THREE.Group();
+      const outer = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.6, 24), fur);
+      outer.scale.set(1, 1, 0.55);
+      const inner = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.42, 24), earIn);
+      inner.scale.set(1, 1, 0.5); inner.position.set(0, -0.02, 0.07);
+      g.add(outer); g.add(inner);
+      g.position.set(0.5 * side, 0.8, -0.02);
+      g.rotation.z = -0.32 * side; g.rotation.x = -0.12;
+      return g;
+    }
+    head.add(makeEar(-1)); head.add(makeEar(1));
+
+    function makeEye(side) {
+      const g = new THREE.Group();
+      const ball = new THREE.Mesh(new THREE.SphereGeometry(0.2, 28, 22), eyeMat);
+      ball.scale.set(0.92, 1.15, 0.55); g.add(ball);
+      const h1 = new THREE.Mesh(new THREE.SphereGeometry(0.065, 16, 12), glintMat);
+      h1.position.set(0.045, 0.075, 0.1); g.add(h1);
+      const h2 = new THREE.Mesh(new THREE.SphereGeometry(0.028, 12, 10), glintMat);
+      h2.position.set(-0.035, -0.05, 0.1); g.add(h2);
+      g.position.set(0.3 * side, 0.04, 0.86);
+      return g;
+    }
+    const eyeL = makeEye(-1), eyeR = makeEye(1);
+    head.add(eyeL); head.add(eyeR);
+
+    const nose = new THREE.Mesh(new THREE.SphereGeometry(0.075, 18, 14), noseMat);
+    nose.scale.set(1.3, 0.95, 0.85); nose.position.set(0, -0.16, 0.93); head.add(nose);
+
+    const blushGeo = new THREE.CircleGeometry(0.15, 24);
+    const blushL = new THREE.Mesh(blushGeo, new THREE.MeshBasicMaterial({ color: 0xf4a0b2, transparent: true, opacity: 0.3, depthWrite: false }));
+    blushL.position.set(-0.46, -0.06, 0.86); blushL.lookAt(camera.position); head.add(blushL);
+    const blushR = new THREE.Mesh(blushGeo, new THREE.MeshBasicMaterial({ color: 0xf4a0b2, transparent: true, opacity: 0.3, depthWrite: false }));
+    blushR.position.set(0.46, -0.06, 0.86); blushR.lookAt(camera.position); head.add(blushR);
+
+    // 尾巴（沿曲线的管，根部为轴摇摆）
+    const tailPts = [
+      new THREE.Vector3(0.8, -0.05, -0.15),
+      new THREE.Vector3(1.05, 0.35, -0.28),
+      new THREE.Vector3(1.22, 0.78, -0.12),
+      new THREE.Vector3(1.14, 1.15, 0.06),
+      new THREE.Vector3(0.95, 1.32, 0.12),
+    ];
+    const tailCurve = new THREE.CatmullRomCurve3(tailPts);
+    const tailMesh = new THREE.Mesh(new THREE.TubeGeometry(tailCurve, 40, 0.14, 14, false), fur);
+    const tailPivot = new THREE.Group(); tailPivot.position.copy(tailPts[0]);
+    tailMesh.position.sub(tailPts[0]); tailPivot.add(tailMesh); cat.add(tailPivot);
+    const tailBase = new THREE.Mesh(new THREE.SphereGeometry(0.18, 20, 16), fur);
+    tailBase.position.copy(tailPts[0]); cat.add(tailBase);
+
+    // 订阅现有交互状态
+    const st = { happy: false, sleeping: false, blinking: false, bouncing: false };
+    function sync() {
+      st.happy = pet.classList.contains('happy');
+      st.sleeping = pet.classList.contains('sleeping');
+      st.blinking = pet.classList.contains('blinking');
+      st.bouncing = pet.classList.contains('bouncing');
+    }
+    new MutationObserver(sync).observe(pet, { attributes: true, attributeFilter: ['class'] });
+    sync();
+
+    const cs = getComputedStyle(petArea);
+    function lookN() {
+      const x = parseFloat(cs.getPropertyValue('--look-x')) || 0;
+      const y = parseFloat(cs.getPropertyValue('--look-y')) || 0;
+      return { x: Math.max(-1, Math.min(1, x / 7)), y: Math.max(-1, Math.min(1, y / 4)) };
+    }
+
+    const clock = new THREE.Clock();
+    let headYaw = 0, headPitch = 0, blinkStart = -1, bounceStart = -1;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+      sync();
+      const lk = lookN();
+
+      // 头部跟随鼠标
+      const tYaw = lk.x * 0.5;
+      const tPitch = lk.y * 0.3 + (st.sleeping ? 0.22 : 0);
+      headYaw += (tYaw - headYaw) * 0.12;
+      headPitch += (tPitch - headPitch) * 0.12;
+      headPivot.rotation.y = headYaw;
+      headPivot.rotation.x = headPitch;
+      headPivot.rotation.z += ((st.happy ? Math.sin(t * 9) * 0.05 : 0) - headPivot.rotation.z) * 0.2;
+
+      // 呼吸
+      const spd = st.sleeping ? 0.9 : 1.7;
+      const amp = st.sleeping ? 0.05 : 0.022;
+      const br = Math.sin(t * spd);
+      torso.scale.set(0.85 + br * amp, 1.05 - br * amp * 0.6, 0.8 + br * amp);
+      head.position.y = Math.sin(t * spd) * 0.015;
+
+      // 眼睛：闭眼/眨眼/开心眯眼
+      let eyeY = 1;
+      if (st.sleeping) eyeY = 0.04;
+      else if (st.happy) eyeY = 0.5;
+      else if (st.blinking) {
+        if (blinkStart < 0) blinkStart = t;
+        const bt = (t - blinkStart) / 0.22;
+        const c = bt < 0.5 ? bt / 0.5 : (1 - bt) / 0.5;
+        eyeY = Math.max(0.05, 1 - Math.max(0, c));
+        if (bt >= 1) blinkStart = -1;
+      } else blinkStart = -1;
+      if (st.blinking) { eyeL.scale.y = eyeY; eyeR.scale.y = eyeY; }
+      else { eyeL.scale.y += (eyeY - eyeL.scale.y) * 0.25; eyeR.scale.y += (eyeY - eyeR.scale.y) * 0.25; }
+
+      // 腮红
+      const bt2 = st.happy ? 0.85 : 0.3;
+      blushL.material.opacity += (bt2 - blushL.material.opacity) * 0.1;
+      blushR.material.opacity += (bt2 - blushR.material.opacity) * 0.1;
+
+      // 尾巴摇摆
+      tailPivot.rotation.y = st.happy ? Math.sin(t * 6) * 0.5 : Math.sin(t * 1.3) * 0.28;
+      tailPivot.rotation.z = Math.sin(t * 1.3) * 0.06;
+
+      // 整体起伏：开心弹跳 / 点一下蹦 / 睡觉微沉
+      let yOff = 0;
+      if (st.happy) yOff += Math.abs(Math.sin(t * 5.5)) * 0.1;
+      if (st.bouncing) {
+        if (bounceStart < 0) bounceStart = t;
+        const bt3 = (t - bounceStart) / 0.6;
+        if (bt3 < 1) yOff += Math.sin(bt3 * Math.PI) * 0.32; else bounceStart = -1;
+      } else bounceStart = -1;
+      if (st.sleeping) yOff -= 0.06;
+      cat.position.y += (yOff - cat.position.y) * 0.2;
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    function resize() {
+      W = mount.clientWidth || 300; H = mount.clientHeight || 330;
+      camera.aspect = W / H; camera.updateProjectionMatrix();
+      renderer.setSize(W, H);
+    }
+    new ResizeObserver(resize).observe(mount);
+    window.addEventListener('resize', resize);
+  })();
+  </script>
+
+</body>
+</html>
