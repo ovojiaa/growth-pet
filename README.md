@@ -82,7 +82,7 @@ growth-pet/
 
 ## 📸 效果预览
 
-![Growth Pet](assets/cat-cutout.png)
+![Growth Pet](assets/perform.png)
 
 ---
 
